@@ -11,6 +11,7 @@ import { Card } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
 import { Badge } from '@/components/atoms/Badge';
 import { Spinner } from '@/components/atoms/Spinner';
+import { BrandCompetitors } from '@/components/organisms/BrandCompetitors';
 import type { Brand } from '@/types';
 
 function Chips({ items, tone = 'gray' }: { items: string[]; tone?: 'gray' | 'blue' | 'green' | 'amber' }) {
@@ -32,9 +33,9 @@ export default function BrandDetailPage() {
   const qc = useQueryClient();
   const params = useParams();
   const id = params.id as string;
-  const [tab, setTab] = useState<'profile' | 'ads' | 'trends' | 'prices'>(
-    'profile',
-  );
+  const [tab, setTab] = useState<
+    'profile' | 'competitors' | 'ads' | 'trends' | 'prices'
+  >('profile');
   const [enrichMsg, setEnrichMsg] = useState<string | null>(null);
 
   const brand = useQuery({
@@ -61,11 +62,12 @@ export default function BrandDetailPage() {
     </div>
   );
 
-  const tabs: { key: typeof tab; label: string; soon?: boolean }[] = [
+  const tabs: { key: typeof tab; label: string }[] = [
     { key: 'profile', label: t('brand.profile') },
-    { key: 'ads', label: t('brand.tabAds'), soon: true },
-    { key: 'trends', label: t('brand.tabTrends'), soon: true },
-    { key: 'prices', label: t('brand.tabPrices'), soon: true },
+    { key: 'competitors', label: t('brand.tabCompetitors') },
+    { key: 'ads', label: t('brand.tabAds') },
+    { key: 'trends', label: t('brand.tabTrends') },
+    { key: 'prices', label: t('brand.tabPrices') },
   ];
 
   return (
@@ -142,7 +144,9 @@ export default function BrandDetailPage() {
             </Card>
           )}
 
-          {tab !== 'profile' && (
+          {tab === 'competitors' && <BrandCompetitors brandId={id} />}
+
+          {(tab === 'ads' || tab === 'trends' || tab === 'prices') && (
             <Card className="p-8 text-center text-sm text-gray-400">
               {t('brand.soon')}
             </Card>

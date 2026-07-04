@@ -79,6 +79,17 @@ export interface Brand {
   createdAt: string;
 }
 
+export interface Competitor {
+  id: string;
+  brandId: string;
+  name: string;
+  domain: string | null;
+  instagram: string | null;
+  notes: string | null;
+  source: 'manual' | 'ai_suggested';
+  createdAt: string;
+}
+
 export type LeadChannel = 'MANUAL' | 'IMPORT' | 'FORM' | 'WEBHOOK' | 'API';
 
 export interface UnqualifiedLead {
