@@ -658,3 +658,20 @@ model Brand {
 
   @@index([tenantId])
 }
+
+// ===== v4.1 — Rakip kaydı (markaya bağlı; elle veya AI önerisi) =====
+model Competitor {
+  id        String   @id @default(uuid())
+  tenantId  String?
+  brandId   String
+  name      String
+  domain    String?
+  instagram String?
+  notes     String?  @db.Text
+  source    String   @default("manual") // manual | ai_suggested
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+  @@index([tenantId])
+}

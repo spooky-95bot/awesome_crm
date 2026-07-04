@@ -34,4 +34,5 @@ export const TENANT_MODELS = new Set<string>([
   'Connection',
   'WhatsAppMessage',
   'Brand',
+  'Competitor',
 ]);
