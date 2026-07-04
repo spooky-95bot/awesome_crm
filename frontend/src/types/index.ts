@@ -60,6 +60,25 @@ export interface User {
   roles: string[];
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+  sector: string | null;
+  niche: string | null;
+  description: string | null;
+  targetAudience: string | null;
+  priceBand: string | null;
+  markets: string[];
+  keywords: string[];
+  answers: {
+    knownCompetitors?: string[];
+    suggestedCompetitors?: string[];
+    adSearchTerms?: string[];
+  } | null;
+  aiEnriched: boolean;
+  createdAt: string;
+}
+
 export type LeadChannel = 'MANUAL' | 'IMPORT' | 'FORM' | 'WEBHOOK' | 'API';
 
 export interface UnqualifiedLead {

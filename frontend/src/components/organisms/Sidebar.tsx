@@ -50,6 +50,12 @@ export function Sidebar() {
         {/* Genel (her zaman görünür) */}
         <NavItem href="/" label={t('nav.dashboard')} />
 
+        <NavSection title={t('nav.grpRadar')} {...sec('radar')}>
+          {can('brand.read') && (
+            <NavItem href="/brands" label={t('nav.brands')} />
+          )}
+        </NavSection>
+
         <NavSection title={t('nav.grpSales')} {...sec('sales')}>
           {can('lead.read') && <NavItem href="/leads" label={t('nav.leads')} />}
           {can('lead_form.read') && (
