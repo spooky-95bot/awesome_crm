@@ -66,6 +66,7 @@ export default function ConnectionsPage() {
       messaging: t('conn.catMessaging'),
       payments: t('conn.catPayments'),
       accounting: t('conn.catAccounting'),
+      research: t('conn.catResearch'),
     })[c] ?? t('conn.catOther');
 
   const connect = useMutation({

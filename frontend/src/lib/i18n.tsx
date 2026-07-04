@@ -510,6 +510,21 @@ export const en: Dict = {
   'comp.manual': 'manual',
   'comp.ai': 'AI',
   'comp.empty': 'No competitors yet. Add manually or import AI suggestions.',
+  'conn.catResearch': 'Research',
+  'ar.connectHint':
+    'Connect Meta Ad Library on the Connections page to search niche ads.',
+  'ar.country': 'Country',
+  'ar.terms': 'Extra search terms (optional, comma-separated)',
+  'ar.search': 'Search ads',
+  'ar.active': 'Active only',
+  'ar.all': 'All',
+  'ar.viewOnMeta': 'View on Meta',
+  'ar.save': 'Save',
+  'ar.savedTitle': 'Saved ads',
+  'ar.noResults': 'No ads found for these terms.',
+  'ar.usedTerms': 'Search terms',
+  'ar.scopeNote':
+    'Results depend on your token’s Ad Library access level (Meta policy).',
   'col.niche': 'Niche',
   'col.sector': 'Sector',
 };
@@ -1006,6 +1021,21 @@ export const tr: Dict = {
   'comp.manual': 'elle',
   'comp.ai': 'AI',
   'comp.empty': 'Henüz rakip yok. Elle ekleyin veya AI önerilerini içe aktarın.',
+  'conn.catResearch': 'Araştırma',
+  'ar.connectHint':
+    'Nişe göre reklam aramak için Bağlantılar sayfasından Meta Ad Library bağlayın.',
+  'ar.country': 'Ülke',
+  'ar.terms': 'Ek arama terimleri (ops., virgülle)',
+  'ar.search': 'Reklam ara',
+  'ar.active': 'Yalnız aktif',
+  'ar.all': 'Tümü',
+  'ar.viewOnMeta': "Meta'da gör",
+  'ar.save': 'Kaydet',
+  'ar.savedTitle': 'Kayıtlı reklamlar',
+  'ar.noResults': 'Bu terimlerde reklam bulunamadı.',
+  'ar.usedTerms': 'Arama terimleri',
+  'ar.scopeNote':
+    'Sonuçlar token’ınızın Ad Library erişim düzeyine bağlıdır (Meta politikası).',
   'col.niche': 'Niş',
   'col.sector': 'Sektör',
 };
