@@ -525,6 +525,12 @@ export const en: Dict = {
   'ar.usedTerms': 'Search terms',
   'ar.scopeNote':
     'Results depend on your token’s Ad Library access level (Meta policy).',
+  'trend.title': 'Interest over time',
+  'trend.geo': 'Region (country code)',
+  'trend.fetch': 'Get trends',
+  'trend.connectHint':
+    'Connect SerpAPI on the Connections page to see niche trends.',
+  'trend.empty': 'No trend data for these keywords.',
   'col.niche': 'Niche',
   'col.sector': 'Sector',
 };
@@ -1036,6 +1042,12 @@ export const tr: Dict = {
   'ar.usedTerms': 'Arama terimleri',
   'ar.scopeNote':
     'Sonuçlar token’ınızın Ad Library erişim düzeyine bağlıdır (Meta politikası).',
+  'trend.title': 'Zaman içinde ilgi',
+  'trend.geo': 'Bölge (ülke kodu)',
+  'trend.fetch': 'Trendleri getir',
+  'trend.connectHint':
+    'Niş trendlerini görmek için Bağlantılar sayfasından SerpAPI bağlayın.',
+  'trend.empty': 'Bu anahtar kelimeler için trend verisi yok.',
   'col.niche': 'Niş',
   'col.sector': 'Sektör',
 };
