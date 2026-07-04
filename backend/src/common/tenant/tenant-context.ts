@@ -36,4 +36,5 @@ export const TENANT_MODELS = new Set<string>([
   'Brand',
   'Competitor',
   'SavedAd',
+  'CompetitorProduct',
 ]);

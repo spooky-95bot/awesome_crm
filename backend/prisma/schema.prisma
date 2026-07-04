@@ -693,3 +693,32 @@ model SavedAd {
   @@index([brandId])
   @@index([tenantId])
 }
+
+// ===== v4.4 — Rakip ürün & fiyat takibi (CSV/elle; fiyat geçmişi) =====
+model CompetitorProduct {
+  id        String       @id @default(uuid())
+  tenantId  String?
+  brandId   String
+  name      String
+  url       String?
+  currency  String       @default("TRY")
+  price     Decimal      @db.Decimal(14, 2)
+  source    String       @default("csv") // csv | manual
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  prices    PricePoint[]
+
+  @@unique([brandId, name])
+  @@index([brandId])
+  @@index([tenantId])
+}
+
+model PricePoint {
+  id         String            @id @default(uuid())
+  productId  String
+  price      Decimal           @db.Decimal(14, 2)
+  capturedAt DateTime          @default(now())
+  product    CompetitorProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, capturedAt])
+}

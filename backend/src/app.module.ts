@@ -27,6 +27,7 @@ import { BrandsModule } from './modules/brands/brands.module';
 import { CompetitorsModule } from './modules/competitors/competitors.module';
 import { AdRadarModule } from './modules/ad-radar/ad-radar.module';
 import { TrendsModule } from './modules/trends/trends.module';
+import { MarketPricesModule } from './modules/market-prices/market-prices.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { HealthModule } from './modules/health/health.module';
@@ -79,6 +80,7 @@ import { TenantMiddleware } from './common/tenant/tenant.middleware';
     CompetitorsModule,
     AdRadarModule,
     TrendsModule,
+    MarketPricesModule,
     InvoicesModule,
     IntegrationsModule,
     HealthModule,
