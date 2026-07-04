@@ -14,6 +14,7 @@ import { Spinner } from '@/components/atoms/Spinner';
 import { BrandCompetitors } from '@/components/organisms/BrandCompetitors';
 import { BrandAdRadar } from '@/components/organisms/BrandAdRadar';
 import { BrandTrends } from '@/components/organisms/BrandTrends';
+import { BrandPrices } from '@/components/organisms/BrandPrices';
 import type { Brand } from '@/types';
 
 function Chips({ items, tone = 'gray' }: { items: string[]; tone?: 'gray' | 'blue' | 'green' | 'amber' }) {
@@ -149,12 +150,7 @@ export default function BrandDetailPage() {
           {tab === 'competitors' && <BrandCompetitors brandId={id} />}
           {tab === 'ads' && <BrandAdRadar brandId={id} />}
           {tab === 'trends' && <BrandTrends brandId={id} />}
-
-          {tab === 'prices' && (
-            <Card className="p-8 text-center text-sm text-gray-400">
-              {t('brand.soon')}
-            </Card>
-          )}
+          {tab === 'prices' && <BrandPrices brandId={id} />}
         </>
       )}
     </DashboardTemplate>

@@ -531,6 +531,15 @@ export const en: Dict = {
   'trend.connectHint':
     'Connect SerpAPI on the Connections page to see niche trends.',
   'trend.empty': 'No trend data for these keywords.',
+  'price.importTitle': 'Import competitor prices (CSV)',
+  'price.csvHint': 'Header: name,price,currency,url',
+  'price.import': 'Import',
+  'price.imported': 'imported',
+  'price.empty': 'No products yet. Import a CSV.',
+  'price.note':
+    'Import prices you are entitled to collect (CSV / product feed export). No scraping.',
+  'price.history': 'History',
+  'col.price': 'Price',
   'col.niche': 'Niche',
   'col.sector': 'Sector',
 };
@@ -1048,6 +1057,15 @@ export const tr: Dict = {
   'trend.connectHint':
     'Niş trendlerini görmek için Bağlantılar sayfasından SerpAPI bağlayın.',
   'trend.empty': 'Bu anahtar kelimeler için trend verisi yok.',
+  'price.importTitle': 'Rakip fiyatlarını içe aktar (CSV)',
+  'price.csvHint': 'Başlık: name,price,currency,url',
+  'price.import': 'İçe aktar',
+  'price.imported': 'içe aktarıldı',
+  'price.empty': 'Henüz ürün yok. CSV içe aktarın.',
+  'price.note':
+    'Toplama hakkınız olan fiyatları içe aktarın (CSV / ürün feed dışa aktarımı). Kazıma yok.',
+  'price.history': 'Geçmiş',
+  'col.price': 'Fiyat',
   'col.niche': 'Niş',
   'col.sector': 'Sektör',
 };
