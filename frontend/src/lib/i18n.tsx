@@ -496,6 +496,7 @@ export const en: Dict = {
   'brand.suggestedCompetitors': 'Suggested competitors',
   'brand.adSearchTerms': 'Niche ad-search terms',
   'brand.profile': 'Profile',
+  'brand.tab360': '360° Growth',
   'brand.tabCompetitors': 'Competitors',
   'brand.tabAds': 'Ad radar',
   'brand.tabTrends': 'Trends',
@@ -542,6 +543,17 @@ export const en: Dict = {
   'col.price': 'Price',
   'col.niche': 'Niche',
   'col.sector': 'Sector',
+  'g.competitors': 'Competitors',
+  'g.savedAds': 'Saved ads',
+  'g.products': 'Tracked products',
+  'g.avgPrice': 'Avg competitor price',
+  'g.generate': 'Generate growth playbook',
+  'g.positioning': 'Positioning',
+  'g.pricing': 'Pricing insight',
+  'g.nextActions': 'Next actions',
+  'g.adAngles': 'Ad angles',
+  'g.contentIdeas': 'Content ideas',
+  'g.aiOff': 'Rule-based summary — add ANTHROPIC_API_KEY for a richer AI playbook.',
 };
 
 // --- Türkçe ---
@@ -1068,6 +1080,17 @@ export const tr: Dict = {
   'col.price': 'Fiyat',
   'col.niche': 'Niş',
   'col.sector': 'Sektör',
+  'g.competitors': 'Rakipler',
+  'g.savedAds': 'Kayıtlı reklam',
+  'g.products': 'Takip edilen ürün',
+  'g.avgPrice': 'Ort. rakip fiyat',
+  'g.generate': 'Büyüme oyun kitabı üret',
+  'g.positioning': 'Konumlandırma',
+  'g.pricing': 'Fiyat içgörüsü',
+  'g.nextActions': 'Sıradaki aksiyonlar',
+  'g.adAngles': 'Reklam açıları',
+  'g.contentIdeas': 'İçerik fikirleri',
+  'g.aiOff': 'Kural-bazlı özet — daha zengin AI oyun kitabı için ANTHROPIC_API_KEY ekleyin.',
 };
 
 const BUILTIN: Record<string, { name: string; dict: Dict }> = {

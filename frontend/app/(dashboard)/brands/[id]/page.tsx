@@ -15,6 +15,7 @@ import { BrandCompetitors } from '@/components/organisms/BrandCompetitors';
 import { BrandAdRadar } from '@/components/organisms/BrandAdRadar';
 import { BrandTrends } from '@/components/organisms/BrandTrends';
 import { BrandPrices } from '@/components/organisms/BrandPrices';
+import { Brand360 } from '@/components/organisms/Brand360';
 import type { Brand } from '@/types';
 
 function Chips({ items, tone = 'gray' }: { items: string[]; tone?: 'gray' | 'blue' | 'green' | 'amber' }) {
@@ -37,8 +38,8 @@ export default function BrandDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [tab, setTab] = useState<
-    'profile' | 'competitors' | 'ads' | 'trends' | 'prices'
-  >('profile');
+    'g360' | 'profile' | 'competitors' | 'ads' | 'trends' | 'prices'
+  >('g360');
   const [enrichMsg, setEnrichMsg] = useState<string | null>(null);
 
   const brand = useQuery({
@@ -66,6 +67,7 @@ export default function BrandDetailPage() {
   );
 
   const tabs: { key: typeof tab; label: string }[] = [
+    { key: 'g360', label: t('brand.tab360') },
     { key: 'profile', label: t('brand.profile') },
     { key: 'competitors', label: t('brand.tabCompetitors') },
     { key: 'ads', label: t('brand.tabAds') },
@@ -95,6 +97,8 @@ export default function BrandDetailPage() {
               </button>
             ))}
           </div>
+
+          {tab === 'g360' && <Brand360 brandId={id} />}
 
           {tab === 'profile' && (
             <Card className="p-4">
