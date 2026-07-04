@@ -134,6 +134,18 @@ export const PROVIDERS: ProviderDef[] = [
       },
     ],
   },
+  // v4.3 — Google Trends verisi SerpAPI'nin RESMİ ucu üzerinden (Google'ı doğrudan kazımaz).
+  {
+    key: 'serpapi',
+    name: 'SerpAPI (Google Trends)',
+    category: 'research',
+    authType: 'api_key',
+    available: true,
+    testable: true,
+    fields: [
+      { key: 'apiKey', label: 'SerpAPI Key', secret: true, required: true },
+    ],
+  },
 ];
 
 export function findProvider(key: string): ProviderDef | undefined {
@@ -187,6 +199,15 @@ export async function testConnection(
             ok: false,
             message: `Meta hata: HTTP ${res.status} (token/erişim kapsamı?)`,
           };
+    }
+    if (provider === 'serpapi') {
+      const res = await fetch(
+        `https://serpapi.com/account?api_key=${encodeURIComponent(secrets.apiKey)}`,
+        { signal: controller.signal },
+      );
+      return res.ok
+        ? { ok: true, message: 'SerpAPI bağlantısı doğrulandı.' }
+        : { ok: false, message: `SerpAPI hata: HTTP ${res.status}` };
     }
     return { ok: false, message: 'Bu sağlayıcı için test yok.' };
   } catch (e) {
