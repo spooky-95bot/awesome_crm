@@ -637,3 +637,24 @@ model AccountingSync {
 
   @@index([status])
 }
+
+// ===== v4.0 — Marka Radarı: kullanıcının kendi markaları + niş profili =====
+model Brand {
+  id             String   @id @default(uuid())
+  tenantId       String?
+  name           String
+  sector         String? // örn: Giyim
+  niche          String? // normalize edilmiş niş, örn: "Erkek sokak giyimi"
+  description    String?  @db.Text
+  targetAudience String?
+  priceBand      String? // budget | mid | premium | luxury
+  markets        Json     @default("[]") // ülke kodları: ["TR","DE"]
+  keywords       Json     @default("[]") // niş anahtar kelimeleri
+  answers        Json? // ham onboarding anket cevapları
+  aiEnriched     Boolean  @default(false)
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+}

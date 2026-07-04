@@ -23,6 +23,7 @@ import { BrandingModule } from './modules/branding/branding.module';
 import { ConnectionsModule } from './modules/connections/connections.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
+import { BrandsModule } from './modules/brands/brands.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { HealthModule } from './modules/health/health.module';
@@ -71,6 +72,7 @@ import { TenantMiddleware } from './common/tenant/tenant.middleware';
     ConnectionsModule,
     WhatsAppModule,
     AccountingModule,
+    BrandsModule,
     InvoicesModule,
     IntegrationsModule,
     HealthModule,

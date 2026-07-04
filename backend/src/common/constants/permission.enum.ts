@@ -49,6 +49,11 @@ export const PERMISSIONS = {
     SEND: 'whatsapp.send',
     READ: 'whatsapp.read',
   },
+  // v4.0 — Marka Radarı (markalar + niş + rakip + trend)
+  BRAND: {
+    READ: 'brand.read',
+    MANAGE: 'brand.manage',
+  },
   INVOICE: {
     CREATE: 'invoice.create',
     READ: 'invoice.read',
@@ -177,6 +182,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.PIPELINE.MANAGE,
     PERMISSIONS.WHATSAPP.SEND,
     PERMISSIONS.WHATSAPP.READ,
+    PERMISSIONS.BRAND.READ,
+    PERMISSIONS.BRAND.MANAGE,
     PERMISSIONS.MEETING.CREATE,
     PERMISSIONS.MEETING.READ,
     PERMISSIONS.MEETING.UPDATE,
@@ -214,6 +221,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.PIPELINE.READ,
     PERMISSIONS.WHATSAPP.SEND,
     PERMISSIONS.WHATSAPP.READ,
+    PERMISSIONS.BRAND.READ,
+    PERMISSIONS.BRAND.MANAGE,
     PERMISSIONS.MEETING.CREATE,
     PERMISSIONS.MEETING.READ,
     PERMISSIONS.MEETING.UPDATE,

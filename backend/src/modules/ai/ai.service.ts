@@ -122,6 +122,17 @@ export class AiService {
     );
   }
 
+  // Genel yapısal çıktı — diğer modüller (ör. Marka Radarı niş zenginleştirme) kullanır.
+  // AI yoksa ServiceUnavailableException (503) fırlatır; çağıran taraf fallback uygular.
+  completeStructured<T>(
+    system: string,
+    user: string,
+    schema: Record<string, unknown>,
+    maxTokens = 1024,
+  ): Promise<T> {
+    return this.completeJson<T>(system, user, schema, maxTokens);
+  }
+
   // --- Yardımcılar ---
 
   private requireClient(): Anthropic {
