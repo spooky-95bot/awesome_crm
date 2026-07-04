@@ -35,4 +35,5 @@ export const TENANT_MODELS = new Set<string>([
   'WhatsAppMessage',
   'Brand',
   'Competitor',
+  'SavedAd',
 ]);

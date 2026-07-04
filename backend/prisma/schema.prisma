@@ -675,3 +675,21 @@ model Competitor {
   @@index([brandId])
   @@index([tenantId])
 }
+
+// ===== v4.2 — Kaydedilen reklamlar (Meta Ad Library radarından yıldızlananlar) =====
+model SavedAd {
+  id          String   @id @default(uuid())
+  tenantId    String?
+  brandId     String
+  adArchiveId String
+  pageName    String?
+  body        String?  @db.Text
+  snapshotUrl String?
+  startTime   String?
+  platforms   Json?
+  createdAt   DateTime @default(now())
+
+  @@unique([brandId, adArchiveId])
+  @@index([brandId])
+  @@index([tenantId])
+}

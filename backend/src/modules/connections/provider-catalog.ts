@@ -117,6 +117,23 @@ export const PROVIDERS: ProviderDef[] = [
     testable: false,
     fields: [],
   },
+  // v4.2 — Meta Ad Library (nişe göre reklam keşfi). Resmi Graph API access token'ı.
+  {
+    key: 'meta_ads',
+    name: 'Meta Ad Library',
+    category: 'research',
+    authType: 'api_key',
+    available: true,
+    testable: true,
+    fields: [
+      {
+        key: 'accessToken',
+        label: 'Access Token (Graph API)',
+        secret: true,
+        required: true,
+      },
+    ],
+  },
 ];
 
 export function findProvider(key: string): ProviderDef | undefined {
@@ -152,6 +169,24 @@ export async function testConnection(
       return res.ok
         ? { ok: true, message: 'Stripe bağlantısı doğrulandı.' }
         : { ok: false, message: `Stripe hata: HTTP ${res.status}` };
+    }
+    if (provider === 'meta_ads') {
+      const url =
+        'https://graph.facebook.com/v20.0/ads_archive?' +
+        new URLSearchParams({
+          ad_reached_countries: '["US"]',
+          search_terms: 'test',
+          ad_type: 'ALL',
+          limit: '1',
+          access_token: secrets.accessToken,
+        }).toString();
+      const res = await fetch(url, { signal: controller.signal });
+      return res.ok
+        ? { ok: true, message: 'Meta Ad Library bağlantısı doğrulandı.' }
+        : {
+            ok: false,
+            message: `Meta hata: HTTP ${res.status} (token/erişim kapsamı?)`,
+          };
     }
     return { ok: false, message: 'Bu sağlayıcı için test yok.' };
   } catch (e) {
