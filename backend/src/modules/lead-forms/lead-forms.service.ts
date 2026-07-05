@@ -75,7 +75,7 @@ export class LeadFormsService {
       buttonColor: dto.buttonColor ?? '#4f46e5',
       buttonLabel: dto.buttonLabel ?? 'Gönder',
       successMessage: dto.successMessage,
-      redirectUrl: dto.redirectUrl,
+      redirectUrl: this.normalizeUrl(dto.redirectUrl),
     });
     // Oluşturmada secret bir kez döner (kurulum için).
     return this.toAdmin(form, true);
@@ -114,7 +114,8 @@ export class LeadFormsService {
     if (dto.buttonLabel !== undefined) data.buttonLabel = dto.buttonLabel;
     if (dto.successMessage !== undefined)
       data.successMessage = dto.successMessage;
-    if (dto.redirectUrl !== undefined) data.redirectUrl = dto.redirectUrl;
+    if (dto.redirectUrl !== undefined)
+      data.redirectUrl = this.normalizeUrl(dto.redirectUrl);
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
     const form = await this.repo.update(id, data);
     return this.toAdmin(form, false);
@@ -308,6 +309,14 @@ export class LeadFormsService {
 
   private genKey(prefix: string): string {
     return `${prefix}_${randomBytes(24).toString('base64url')}`;
+  }
+
+  // redirectUrl'i mutlak yap: şema yoksa https:// ekle. Aksi halde tarayıcı "google.com"u
+  // göreli sayar → embed başka bir forma yönlenir (kırık). Boş → undefined.
+  private normalizeUrl(url?: string): string | undefined {
+    const v = (url ?? '').trim();
+    if (!v) return undefined;
+    return /^https?:\/\//i.test(v) ? v : `https://${v}`;
   }
 
   private defaultFields() {

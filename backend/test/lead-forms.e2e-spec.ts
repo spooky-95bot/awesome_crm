@@ -123,6 +123,16 @@ describe('Lead intake forms + webhook (e2e)', () => {
       .send({ name: 'x' })
       .expect(403));
 
+  it('redirectUrl şemasız girilirse https:// eklenir (göreli yönlenme fix)', async () => {
+    const r = await request(app.getHttpServer())
+      .post(`${base}/lead-forms`)
+      .set(auth(adminToken))
+      .send({ name: `Redir_${ts}`, redirectUrl: 'google.com' })
+      .expect(201);
+    expect(r.body.data.redirectUrl).toBe('https://google.com');
+    await prisma.leadForm.deleteMany({ where: { id: r.body.data.id } });
+  });
+
   it('SALES GET /lead-forms → 200 (lead_form.read var, secret gizli)', async () => {
     const r = await request(app.getHttpServer())
       .get(`${base}/lead-forms`)

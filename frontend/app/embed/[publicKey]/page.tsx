@@ -111,7 +111,11 @@ export default function EmbedFormPage({
       }
       const redirect = j?.data?.redirectUrl as string | null;
       if (redirect) {
-        window.location.href = redirect;
+        // Şema yoksa (ör. "google.com") tarayıcı göreli sayar → mutlak https'e çevir.
+        const target = /^https?:\/\//i.test(redirect)
+          ? redirect
+          : `https://${redirect}`;
+        window.location.href = target;
         return;
       }
       setState('done');
