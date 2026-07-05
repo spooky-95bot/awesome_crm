@@ -164,6 +164,73 @@ describe('Lead intake forms + webhook (e2e)', () => {
     ).toEqual({ utm_campaign: 'spring' });
   });
 
+  it('v4.7 alan ayarları: intl phone + min/max + maxLength + özel mesaj doğrulaması', async () => {
+    // Ayarlı alanlarla form oluştur.
+    const f = await request(app.getHttpServer())
+      .post(`${base}/lead-forms`)
+      .set(auth(adminToken))
+      .send({
+        name: `Valid_${ts}`,
+        fields: [
+          { key: 'firstName', label: 'Ad', type: 'text', required: true },
+          {
+            key: 'phone',
+            label: 'Telefon',
+            type: 'phone',
+            required: true,
+            errorMessage: 'Lütfen geçerli telefon girin',
+          },
+          { key: 'age', label: 'Yaş', type: 'number', min: 18, max: 99 },
+          { key: 'code', label: 'Kod', type: 'text', maxLength: 5 },
+        ],
+      })
+      .expect(201);
+    const vKey = f.body.data.publicKey as string;
+    const vId = f.body.data.id as string;
+
+    // Geçerli submit → 200 (E.164 telefon).
+    await request(app.getHttpServer())
+      .post(`${base}/public/lead-forms/${vKey}/submit`)
+      .send({
+        firstName: `Val_${ts}`,
+        phone: '+905321234567',
+        age: '30',
+        code: 'AB12',
+      })
+      .expect(200);
+
+    // Zorunlu telefon eksik → 400 + özel mesaj.
+    const miss = await request(app.getHttpServer())
+      .post(`${base}/public/lead-forms/${vKey}/submit`)
+      .send({ firstName: 'X' })
+      .expect(400);
+    expect(miss.body.error.message).toBe('Lütfen geçerli telefon girin');
+
+    // Geçersiz telefon (E.164 değil) → 400 + özel mesaj.
+    const badPhone = await request(app.getHttpServer())
+      .post(`${base}/public/lead-forms/${vKey}/submit`)
+      .send({ firstName: 'X', phone: '05321234567' })
+      .expect(400);
+    expect(badPhone.body.error.message).toBe('Lütfen geçerli telefon girin');
+
+    // Sayı min altında → 400.
+    const young = await request(app.getHttpServer())
+      .post(`${base}/public/lead-forms/${vKey}/submit`)
+      .send({ firstName: 'X', phone: '+905321234567', age: '15' })
+      .expect(400);
+    expect(young.body.error.message).toContain('en az 18');
+
+    // maxLength aşımı → 400.
+    await request(app.getHttpServer())
+      .post(`${base}/public/lead-forms/${vKey}/submit`)
+      .send({ firstName: 'X', phone: '+905321234567', code: 'TOOLONG' })
+      .expect(400);
+
+    // temizlik
+    await prisma.lead.deleteMany({ where: { formId: vId } });
+    await prisma.leadForm.deleteMany({ where: { id: vId } });
+  });
+
   it('WEBHOOK geçerli HMAC → 200, WEBHOOK kanalı lead üretir', async () => {
     const body = JSON.stringify({
       firstName: `HookLead_${ts}`,

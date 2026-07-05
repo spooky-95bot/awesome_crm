@@ -7,11 +7,15 @@ import {
   IsBoolean,
   IsEnum,
   IsHexColor,
+  IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -33,15 +37,78 @@ export class FormFieldDto {
   @MaxLength(80)
   label: string;
 
-  @ApiPropertyOptional({ enum: ['text', 'email', 'tel', 'textarea', 'number'] })
+  @ApiPropertyOptional({
+    enum: ['text', 'email', 'tel', 'phone', 'textarea', 'number'],
+    description: '"phone" = uluslararası telefon (ülke kodu + E.164)',
+  })
   @IsOptional()
-  @IsEnum(['text', 'email', 'tel', 'textarea', 'number'])
+  @IsEnum(['text', 'email', 'tel', 'phone', 'textarea', 'number'])
   type?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
   required?: boolean;
+
+  // --- Alan ayarları (v4.7): placeholder, yardım metni, sınırlar, özel hata mesajı ---
+
+  @ApiPropertyOptional({ description: 'Girdi placeholder metni' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  placeholder?: string;
+
+  @ApiPropertyOptional({ description: 'Alanın altında görünen yardım metni' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  helpText?: string;
+
+  @ApiPropertyOptional({ description: 'Sayısal alan için en küçük değer' })
+  @IsOptional()
+  @IsNumber()
+  min?: number;
+
+  @ApiPropertyOptional({ description: 'Sayısal alan için en büyük değer' })
+  @IsOptional()
+  @IsNumber()
+  max?: number;
+
+  @ApiPropertyOptional({ description: 'En az karakter sayısı' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  minLength?: number;
+
+  @ApiPropertyOptional({ description: 'En fazla karakter sayısı' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  maxLength?: number;
+
+  @ApiPropertyOptional({ description: 'Özel doğrulama regex deseni' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  pattern?: string;
+
+  @ApiPropertyOptional({
+    description: 'Doğrulama başarısızsa gösterilecek özel uyarı mesajı',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  errorMessage?: string;
+
+  @ApiPropertyOptional({
+    description: 'phone tipi için varsayılan ülke (ISO2, ör. TR)',
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[A-Za-z]{2}$/, { message: 'defaultCountry ISO2 olmalı (ör. TR)' })
+  defaultCountry?: string;
 }
 
 export class CreateLeadFormDto {

@@ -2,6 +2,7 @@
 // İŞ MANTIĞI: Lead intake formu CRUD + public submit (imzasız) + webhook ingest (HMAC zorunlu).
 // docs/90 §webhook: imza DOĞRULANMADAN hiçbir DB yazımı yapılmaz (webhook yolunda).
 import {
+  BadRequestException,
   ForbiddenException,
   GoneException,
   Injectable,
@@ -32,6 +33,26 @@ const KNOWN_KEYS = new Set([
   'companyName',
   'source',
 ]);
+
+// Form alanı tanımı (JSON'dan). Ayarlar v4.7'de eklendi.
+interface FormField {
+  key: string;
+  label?: string;
+  type?: string;
+  required?: boolean;
+  placeholder?: string;
+  helpText?: string;
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  errorMessage?: string;
+  defaultCountry?: string;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const E164_RE = /^\+[1-9]\d{6,14}$/; // uluslararası telefon (E.164)
 
 @Injectable()
 export class LeadFormsService {
@@ -133,6 +154,9 @@ export class LeadFormsService {
     if (!form) throw new NotFoundException('Form bulunamadı');
     if (!form.isActive) throw new GoneException('Form pasif');
 
+    // Sunucu-taraflı alan doğrulaması (istemci kontrolü atlanabilir → secure by default).
+    this.validateSubmission(form.fields as unknown as FormField[], payload);
+
     const lead = await this.ingest(payload, LeadChannel.FORM, form);
     return {
       success: true,
@@ -175,6 +199,59 @@ export class LeadFormsService {
     }
     const lead = await this.ingest(payload, LeadChannel.WEBHOOK, form);
     return { success: true, leadId: lead.id };
+  }
+
+  // Form alanı ayarlarına göre gövdeyi doğrular. İlk hatada özel mesajla 400 fırlatır.
+  // İstemci doğrulaması güvenlik sınırı değildir; asıl kontrol burada.
+  private validateSubmission(
+    fields: FormField[],
+    payload: Record<string, unknown>,
+  ): void {
+    if (!Array.isArray(fields)) return;
+    for (const f of fields) {
+      if (!f || typeof f.key !== 'string') continue;
+      const label = f.label || f.key;
+      const raw = payload[f.key];
+      const value = raw == null ? '' : String(raw).trim();
+      const fail = (fallback: string): never => {
+        throw new BadRequestException(f.errorMessage || fallback);
+      };
+
+      if (value === '') {
+        if (f.required) fail(`${label} zorunludur.`);
+        continue; // boş + opsiyonel → diğer kontrolleri atla
+      }
+
+      const type = f.type ?? 'text';
+      if (type === 'email' && !EMAIL_RE.test(value)) {
+        fail(`${label} geçerli bir e-posta olmalı.`);
+      }
+      if (type === 'phone' && !E164_RE.test(value)) {
+        fail(`${label} geçerli bir uluslararası telefon olmalı (+90…).`);
+      }
+      if (type === 'number') {
+        const n = Number(value);
+        if (!Number.isFinite(n)) fail(`${label} sayı olmalı.`);
+        if (f.min != null && n < f.min) fail(`${label} en az ${f.min} olmalı.`);
+        if (f.max != null && n > f.max)
+          fail(`${label} en fazla ${f.max} olmalı.`);
+      }
+      if (f.minLength != null && value.length < f.minLength) {
+        fail(`${label} en az ${f.minLength} karakter olmalı.`);
+      }
+      if (f.maxLength != null && value.length > f.maxLength) {
+        fail(`${label} en fazla ${f.maxLength} karakter olmalı.`);
+      }
+      if (f.pattern) {
+        try {
+          if (!new RegExp(f.pattern).test(value)) {
+            fail(`${label} istenen biçimde değil.`);
+          }
+        } catch {
+          // Geçersiz regex → alan doğrulaması atlanır (form kaydını engellemez).
+        }
+      }
+    }
   }
 
   // ---- Ortak: payload → lead (ad ayrıştırma + meta) ----
