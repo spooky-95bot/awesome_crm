@@ -37,4 +37,5 @@ export const TENANT_MODELS = new Set<string>([
   'Competitor',
   'SavedAd',
   'CompetitorProduct',
+  'PaymentIntent',
 ]);

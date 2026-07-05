@@ -201,6 +201,73 @@ export class InvoicesService {
     return this.toView(cancelled, actor);
   }
 
+  // v4.6 — iyzico ödeme başlatma için anlık görüntü (kalan bakiye dahil). Repo erişimi
+  // yalnız servis üstünden; ödeme modülü faturayı doğrudan okumaz.
+  async paymentSnapshot(id: string) {
+    const invoice = await this.getOrThrow(id);
+    return {
+      id: invoice.id,
+      number: invoice.number,
+      status: invoice.status,
+      currency: invoice.currency,
+      customerName: invoice.customerName,
+      customerEmail: invoice.customerEmail,
+      total: invoice.total,
+      amountPaid: invoice.amountPaid,
+      remaining: invoice.total.minus(invoice.amountPaid),
+    };
+  }
+
+  // v4.6 — Dış sağlayıcı (iyzico) ödemesini kaydeder. actor YOK (callback public);
+  // recordedById çağıran taraftan (ödeme niyetini başlatan kullanıcı). addPayment ile
+  // AYNI finansal güvenceler: pozitiflik, aşırı ödeme engeli, durum türetimi, invoice.paid.
+  async applyExternalPayment(
+    id: string,
+    amount: string,
+    opts: { method: string; reference: string; recordedById: string },
+  ) {
+    const invoice = await this.getOrThrow(id);
+    if (
+      invoice.status === InvoiceStatus.DRAFT ||
+      invoice.status === InvoiceStatus.CANCELLED
+    ) {
+      throw new ConflictException(
+        'Bu fatura durumunda ödeme kaydedilemez (DRAFT/CANCELLED).',
+      );
+    }
+    const amt = new D(amount);
+    if (amt.lte(0)) {
+      throw new BadRequestException('Ödeme tutarı pozitif olmalı.');
+    }
+    const newAmountPaid = invoice.amountPaid.plus(amt);
+    if (newAmountPaid.gt(invoice.total)) {
+      throw new BadRequestException(
+        'Ödeme toplam tutarı aşamaz (aşırı ödeme).',
+      );
+    }
+    const status = deriveStatus(newAmountPaid, invoice.total);
+    const updated = await this.repo.addPayment({
+      invoiceId: id,
+      amount,
+      method: opts.method,
+      reference: opts.reference,
+      recordedById: opts.recordedById,
+      newAmountPaid,
+      status,
+    });
+    this.logger.log(
+      `invoice.payment.external invoice=${id} amount=${amount} status=${status}`,
+    );
+    if (status === InvoiceStatus.PAID) {
+      this.events.emit('invoice.paid', {
+        invoiceId: id,
+        number: invoice.number,
+        total: invoice.total.toString(),
+      });
+    }
+    return updated;
+  }
+
   // --- Yardımcılar ---
 
   private async getOrThrow(id: string): Promise<InvoiceWithRelations> {

@@ -30,6 +30,7 @@ import { TrendsModule } from './modules/trends/trends.module';
 import { MarketPricesModule } from './modules/market-prices/market-prices.module';
 import { GrowthModule } from './modules/growth/growth.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { HealthModule } from './modules/health/health.module';
 import { CompaniesModule } from './modules/companies/companies.module';
@@ -84,6 +85,7 @@ import { TenantMiddleware } from './common/tenant/tenant.middleware';
     MarketPricesModule,
     GrowthModule,
     InvoicesModule,
+    PaymentsModule,
     IntegrationsModule,
     HealthModule,
     CompaniesModule,

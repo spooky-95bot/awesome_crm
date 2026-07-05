@@ -1,6 +1,7 @@
 // src/modules/connections/provider-catalog.ts
 // Entegrasyon provider kataloğu + bağlantı testi. secret=true alanlar şifreli saklanır,
 // diğerleri (config) düz. available=false → panelde "yakında" (henüz bağlanamaz).
+import { iyziAuthHeaders, iyziBaseUrl } from '../../common/http/iyzico-auth';
 
 export interface ProviderField {
   key: string;
@@ -108,14 +109,26 @@ export const PROVIDERS: ProviderDef[] = [
       },
     ],
   },
+  // v4.6 — iyzico Checkout Form (Türkiye kart tahsilatı). API+Secret key şifreli saklanır;
+  // baseUrl config (sandbox varsayılan). Callback sunucu-taraflı "retrieve" ile doğrulanır.
   {
     key: 'iyzico',
     name: 'iyzico',
     category: 'payments',
     authType: 'api_key',
-    available: false,
-    testable: false,
-    fields: [],
+    available: true,
+    testable: true,
+    fields: [
+      { key: 'apiKey', label: 'API Key', secret: true, required: true },
+      { key: 'secretKey', label: 'Secret Key', secret: true, required: true },
+      {
+        key: 'baseUrl',
+        label: 'Base URL (boş=sandbox)',
+        secret: false,
+        required: false,
+        placeholder: 'https://sandbox-api.iyzipay.com',
+      },
+    ],
   },
   // v4.2 — Meta Ad Library (nişe göre reklam keşfi). Resmi Graph API access token'ı.
   {
@@ -199,6 +212,34 @@ export async function testConnection(
             ok: false,
             message: `Meta hata: HTTP ${res.status} (token/erişim kapsamı?)`,
           };
+    }
+    if (provider === 'iyzico') {
+      // BIN sorgusu ile kimlik doğrulama ping'i (imza geçerliyse status:success döner).
+      const uriPath = '/payment/bin/check';
+      const body = JSON.stringify({
+        locale: 'tr',
+        conversationId: 'conn-test',
+        binNumber: '552879',
+      });
+      const headers = iyziAuthHeaders(
+        secrets.apiKey,
+        secrets.secretKey,
+        uriPath,
+        body,
+      );
+      const res = await fetch(iyziBaseUrl(config) + uriPath, {
+        method: 'POST',
+        headers,
+        body,
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        return { ok: false, message: `iyzico hata: HTTP ${res.status}` };
+      }
+      const json = (await res.json()) as { status?: string };
+      return json.status === 'success'
+        ? { ok: true, message: 'iyzico bağlantısı doğrulandı.' }
+        : { ok: false, message: 'iyzico: kimlik doğrulanamadı (key/secret?).' };
     }
     if (provider === 'serpapi') {
       const res = await fetch(
