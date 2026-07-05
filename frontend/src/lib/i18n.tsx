@@ -281,6 +281,13 @@ export const en: Dict = {
     'You lack financial view permission — amounts are masked at the API.',
   'inv.paymentTitle': 'Add payment',
   'inv.savePayment': 'Save payment',
+  // iyzico payment (v4.6)
+  'pay.iyzico': 'Pay with iyzico',
+  'pay.starting': 'Redirecting to iyzico…',
+  'pay.notConnected':
+    'iyzico is not connected — connect it on the Connections page.',
+  'pay.success': 'Payment received — invoice marked paid.',
+  'pay.failed': 'Payment failed or was cancelled.',
   // Automation modal
   'auto.newTitle': 'New automation rule',
   'auto.editPrefix': 'Rule',
@@ -818,6 +825,13 @@ export const tr: Dict = {
     'Finansal görüntüleme yetkiniz yok — tutarlar API tarafında maskelenir.',
   'inv.paymentTitle': 'Ödeme ekle',
   'inv.savePayment': 'Ödemeyi kaydet',
+  // iyzico ödeme (v4.6)
+  'pay.iyzico': 'iyzico ile Öde',
+  'pay.starting': 'iyzico’ya yönlendiriliyor…',
+  'pay.notConnected':
+    'iyzico bağlı değil — Bağlantılar sayfasından bağlayın.',
+  'pay.success': 'Ödeme alındı — fatura ödendi olarak işaretlendi.',
+  'pay.failed': 'Ödeme başarısız veya iptal edildi.',
   // Otomasyon modal
   'auto.newTitle': 'Yeni otomasyon kuralı',
   'auto.editPrefix': 'Kural',

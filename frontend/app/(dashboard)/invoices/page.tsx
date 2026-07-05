@@ -1,6 +1,6 @@
 'use client';
 // app/(dashboard)/invoices/page.tsx — fatura: liste + oluştur (kalemli) + issue/ödeme/iptal.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -92,6 +92,31 @@ export default function InvoicesPage() {
     onSuccess: invalidate,
   });
 
+  // v4.6 — iyzico Checkout Form: başlat → hosted ödeme sayfasına yönlen.
+  // iyzico ödeme sonrası backend callback'i tarayıcıyı /invoices?payment=... adresine döndürür.
+  const payIyzico = useMutation({
+    mutationFn: async (id: string) =>
+      unwrap<{ paymentPageUrl: string | null }>(
+        (await api.post(`/invoices/${id}/pay/iyzico`)).data,
+      ),
+    onSuccess: (r) => {
+      if (r.paymentPageUrl) window.location.href = r.paymentPageUrl;
+    },
+    onError: () => alert(t('pay.notConnected')),
+  });
+
+  // Ödeme dönüşü (?payment=success|failed) → banner + liste tazele. window üzerinden
+  // okunur (useSearchParams statik prerender'ı bozardı); yalnız istemcide çalışır.
+  const [payResult, setPayResult] = useState<string | null>(null);
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('payment');
+    if (p) {
+      setPayResult(p);
+      invalidate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // v3.2 — bağlı muhasebe sağlayıcısına gönder (QuickBooks/Xero).
   const accSync = useMutation({
     mutationFn: async (id: string) =>
@@ -155,6 +180,18 @@ export default function InvoicesPage() {
                 {t('act.payment')}
               </Button>
             )}
+          {['SENT', 'PARTIALLY_PAID', 'OVERDUE'].includes(r.status) &&
+            can('invoice.update') &&
+            financial && (
+              <Button
+                variant="secondary"
+                className="px-2 py-1 text-xs"
+                onClick={() => payIyzico.mutate(r.id)}
+                disabled={payIyzico.isPending}
+              >
+                💳 {payIyzico.isPending ? t('pay.starting') : t('pay.iyzico')}
+              </Button>
+            )}
           {can('whatsapp.send') && r.status !== 'DRAFT' && (
             <Button
               variant="ghost"
@@ -194,6 +231,16 @@ export default function InvoicesPage() {
 
   return (
     <DashboardTemplate title="page.invoices">
+      {payResult === 'success' && (
+        <p className="mb-3 rounded-md bg-emerald-50 p-2 text-sm text-emerald-700">
+          {t('pay.success')}
+        </p>
+      )}
+      {payResult === 'failed' && (
+        <p className="mb-3 rounded-md bg-red-50 p-2 text-sm text-red-700">
+          {t('pay.failed')}
+        </p>
+      )}
       {!financial && (
         <p className="mb-3 text-xs text-amber-600">{t('inv.financialWarn')}</p>
       )}
