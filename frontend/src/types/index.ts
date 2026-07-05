@@ -110,6 +110,16 @@ export interface LeadFormField {
   label: string;
   type?: string;
   required?: boolean;
+  // Alan ayarları (v4.7)
+  placeholder?: string;
+  helpText?: string;
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  errorMessage?: string;
+  defaultCountry?: string;
 }
 
 export interface LeadForm {

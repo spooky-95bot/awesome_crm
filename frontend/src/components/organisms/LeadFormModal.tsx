@@ -4,13 +4,14 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
+import { COUNTRIES } from '@/lib/countries';
 import { Modal } from '../molecules/Modal';
 import { FormField } from '../molecules/FormField';
 import { Textarea } from '../atoms/Textarea';
 import { Button } from '../atoms/Button';
 import type { LeadForm, LeadFormField } from '@/types';
 
-const FIELD_TYPES = ['text', 'email', 'tel', 'textarea', 'number'];
+const FIELD_TYPES = ['text', 'email', 'tel', 'phone', 'textarea', 'number'];
 
 function CopyRow({
   value,
@@ -78,6 +79,7 @@ export function LeadFormModal({
   );
   const [redirectUrl, setRedirectUrl] = useState(form?.redirectUrl ?? '');
   const [isActive, setIsActive] = useState(form?.isActive ?? true);
+  const [openSettings, setOpenSettings] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   // Oluşturma sonrası tek seferlik secret + paylaşım için.
@@ -89,6 +91,9 @@ export function LeadFormModal({
 
   const setField = (i: number, patch: Partial<LeadFormField>) =>
     setFields(fields.map((f, idx) => (idx === i ? { ...f, ...patch } : f)));
+  // Sayısal ayar: boş → undefined (alanı temizle), aksi halde sayı.
+  const setNum = (i: number, key: keyof LeadFormField, v: string) =>
+    setField(i, { [key]: v === '' ? undefined : Number(v) });
 
   const save = async () => {
     setBusy(true);
@@ -156,49 +161,192 @@ export function LeadFormModal({
           <p className="mb-1 mt-3 text-sm font-medium text-gray-600">
             {t('lf.fields')}
           </p>
-          {fields.map((f, i) => (
-            <div key={i} className="mb-2 grid grid-cols-12 items-center gap-2">
-              <input
-                className="col-span-3 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                placeholder={t('lf.fieldKey')}
-                value={f.key}
-                onChange={(e) => setField(i, { key: e.target.value })}
-              />
-              <input
-                className="col-span-4 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                placeholder={t('lf.fieldLabel')}
-                value={f.label}
-                onChange={(e) => setField(i, { label: e.target.value })}
-              />
-              <select
-                className="col-span-2 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                value={f.type ?? 'text'}
-                onChange={(e) => setField(i, { type: e.target.value })}
+          {fields.map((f, i) => {
+            const type = f.type ?? 'text';
+            const isNumber = type === 'number';
+            const isText = ['text', 'textarea', 'tel', 'email'].includes(type);
+            const open = openSettings === i;
+            return (
+              <div
+                key={i}
+                className="mb-2 rounded-md border border-gray-100 bg-gray-50/50 p-1.5"
               >
-                {FIELD_TYPES.map((tp) => (
-                  <option key={tp} value={tp}>
-                    {tp}
-                  </option>
-                ))}
-              </select>
-              <label className="col-span-2 flex items-center gap-1 text-xs text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={!!f.required}
-                  onChange={(e) => setField(i, { required: e.target.checked })}
-                />
-                {t('lf.fieldRequired')}
-              </label>
-              <button
-                type="button"
-                className="col-span-1 text-gray-400 hover:text-red-600"
-                onClick={() => setFields(fields.filter((_, idx) => idx !== i))}
-                aria-label={t('auto.remove')}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <input
+                    className="col-span-3 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                    placeholder={t('lf.fieldKey')}
+                    value={f.key}
+                    onChange={(e) => setField(i, { key: e.target.value })}
+                  />
+                  <input
+                    className="col-span-3 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                    placeholder={t('lf.fieldLabel')}
+                    value={f.label}
+                    onChange={(e) => setField(i, { label: e.target.value })}
+                  />
+                  <select
+                    className="col-span-2 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                    value={type}
+                    onChange={(e) => setField(i, { type: e.target.value })}
+                  >
+                    {FIELD_TYPES.map((tp) => (
+                      <option key={tp} value={tp}>
+                        {tp === 'phone' ? t('lf.typePhone') : tp}
+                      </option>
+                    ))}
+                  </select>
+                  <label className="col-span-2 flex items-center gap-1 text-xs text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={!!f.required}
+                      onChange={(e) =>
+                        setField(i, { required: e.target.checked })
+                      }
+                    />
+                    {t('lf.fieldRequired')}
+                  </label>
+                  <button
+                    type="button"
+                    className={`col-span-1 ${open ? 'text-brand-600' : 'text-gray-400'} hover:text-brand-700`}
+                    onClick={() => setOpenSettings(open ? null : i)}
+                    aria-label={t('lf.settings')}
+                    title={t('lf.settings')}
+                  >
+                    ⚙️
+                  </button>
+                  <button
+                    type="button"
+                    className="col-span-1 text-gray-400 hover:text-red-600"
+                    onClick={() =>
+                      setFields(fields.filter((_, idx) => idx !== i))
+                    }
+                    aria-label={t('auto.remove')}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {open && (
+                  <div className="mt-2 grid grid-cols-2 gap-2 rounded-md bg-white p-2">
+                    <label className="col-span-2 text-xs text-gray-500">
+                      {t('lf.placeholder')}
+                      <input
+                        className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                        value={f.placeholder ?? ''}
+                        onChange={(e) =>
+                          setField(i, { placeholder: e.target.value })
+                        }
+                      />
+                    </label>
+                    <label className="col-span-2 text-xs text-gray-500">
+                      {t('lf.helpText')}
+                      <input
+                        className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                        value={f.helpText ?? ''}
+                        onChange={(e) =>
+                          setField(i, { helpText: e.target.value })
+                        }
+                      />
+                    </label>
+
+                    {isNumber && (
+                      <>
+                        <label className="text-xs text-gray-500">
+                          {t('lf.min')}
+                          <input
+                            type="number"
+                            className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                            value={f.min ?? ''}
+                            onChange={(e) => setNum(i, 'min', e.target.value)}
+                          />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                          {t('lf.max')}
+                          <input
+                            type="number"
+                            className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                            value={f.max ?? ''}
+                            onChange={(e) => setNum(i, 'max', e.target.value)}
+                          />
+                        </label>
+                      </>
+                    )}
+
+                    {isText && (
+                      <>
+                        <label className="text-xs text-gray-500">
+                          {t('lf.minLength')}
+                          <input
+                            type="number"
+                            className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                            value={f.minLength ?? ''}
+                            onChange={(e) =>
+                              setNum(i, 'minLength', e.target.value)
+                            }
+                          />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                          {t('lf.maxLength')}
+                          <input
+                            type="number"
+                            className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                            value={f.maxLength ?? ''}
+                            onChange={(e) =>
+                              setNum(i, 'maxLength', e.target.value)
+                            }
+                          />
+                        </label>
+                        <label className="col-span-2 text-xs text-gray-500">
+                          {t('lf.pattern')}
+                          <input
+                            className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 font-mono text-sm"
+                            placeholder="^[A-Z0-9]+$"
+                            value={f.pattern ?? ''}
+                            onChange={(e) =>
+                              setField(i, { pattern: e.target.value || undefined })
+                            }
+                          />
+                        </label>
+                      </>
+                    )}
+
+                    {type === 'phone' && (
+                      <label className="col-span-2 text-xs text-gray-500">
+                        {t('lf.defaultCountry')}
+                        <select
+                          className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                          value={f.defaultCountry ?? 'TR'}
+                          onChange={(e) =>
+                            setField(i, { defaultCountry: e.target.value })
+                          }
+                        >
+                          {COUNTRIES.map((c) => (
+                            <option key={c.iso2} value={c.iso2}>
+                              {c.flag} {c.name} (+{c.dial})
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+
+                    <label className="col-span-2 text-xs text-gray-500">
+                      {t('lf.errorMessage')}
+                      <input
+                        className="mt-0.5 w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
+                        placeholder={t('lf.errorMessagePh')}
+                        value={f.errorMessage ?? ''}
+                        onChange={(e) =>
+                          setField(i, {
+                            errorMessage: e.target.value || undefined,
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <Button
             variant="ghost"
             className="text-xs"
