@@ -1,10 +1,12 @@
 'use client';
 // app/(dashboard)/connections/page.tsx — v3 entegrasyon bağlantıları (panelden bağlan).
 import { useState } from 'react';
+import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
+import { INTEGRATION_ICONS } from '@/lib/integration-guide';
 import { DashboardTemplate } from '@/components/templates/DashboardTemplate';
 import { Card } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
@@ -114,7 +116,15 @@ export default function ConnectionsPage() {
 
   return (
     <DashboardTemplate title="page.connections">
-      <p className="mb-3 text-sm text-gray-500">{t('conn.hint')}</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-gray-500">{t('conn.hint')}</p>
+        <Link
+          href="/connections/guide"
+          className="inline-flex items-center gap-1.5 rounded-md border border-brand-200 bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100"
+        >
+          📖 {t('conn.guide')}
+        </Link>
+      </div>
       {catalog.data && !catalog.data.cryptoReady && (
         <Card className="mb-4 border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
           {t('conn.cryptoMissing')}
@@ -130,7 +140,12 @@ export default function ConnectionsPage() {
             return (
               <Card key={p.key} className="flex flex-col p-4">
                 <div className="mb-1 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-800">{p.name}</h3>
+                  <h3 className="flex items-center gap-2 font-semibold text-gray-800">
+                    <span className="text-xl" aria-hidden>
+                      {INTEGRATION_ICONS[p.key] ?? '🔌'}
+                    </span>
+                    {p.name}
+                  </h3>
                   {conn ? (
                     <Badge
                       tone={
@@ -153,7 +168,15 @@ export default function ConnectionsPage() {
                     )
                   )}
                 </div>
-                <p className="mb-3 text-xs text-gray-400">{catLabel(p.category)}</p>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs text-gray-400">{catLabel(p.category)}</p>
+                  <Link
+                    href={`/connections/guide#${p.key}`}
+                    className="text-xs text-brand-600 hover:underline"
+                  >
+                    {t('conn.howTo')}
+                  </Link>
+                </div>
 
                 <div className="mt-auto flex flex-wrap gap-2">
                   {conn ? (

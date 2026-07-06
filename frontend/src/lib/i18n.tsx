@@ -450,6 +450,8 @@ export const en: Dict = {
   'page.connections': 'Connections',
   'conn.hint':
     'Connect external services (WhatsApp, Stripe, accounting…) from here. Secrets are encrypted at rest and never shown again.',
+  'conn.guide': 'Integration guide',
+  'conn.howTo': 'How to connect?',
   'conn.cryptoMissing':
     'Set APP_ENCRYPTION_KEY on the server to store integration secrets securely.',
   'conn.connect': 'Connect',
@@ -1007,6 +1009,8 @@ export const tr: Dict = {
   'page.connections': 'Bağlantılar',
   'conn.hint':
     'Dış servisleri (WhatsApp, Stripe, muhasebe…) buradan bağlayın. Sırlar şifreli saklanır ve bir daha gösterilmez.',
+  'conn.guide': 'Entegrasyon rehberi',
+  'conn.howTo': 'Nasıl bağlanır?',
   'conn.cryptoMissing':
     'Entegrasyon sırlarını güvenle saklamak için sunucuda APP_ENCRYPTION_KEY tanımlayın.',
   'conn.connect': 'Bağla',
