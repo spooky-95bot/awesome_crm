@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { EXT_HTTP, IExtHttpClient } from '../../common/http/ext-http.client';
+import { metaErrorMessage } from '../../common/http/meta-error';
 import { ConnectionsService } from '../connections/connections.service';
 import { BrandsService } from '../brands/brands.service';
 import { AdRadarRepository } from './ad-radar.repository';
@@ -75,12 +76,12 @@ export class AdRadarService {
       Accept: 'application/json',
     });
     if (res.status < 200 || res.status >= 300) {
-      // Meta hata gövdesini kullanıcıya sızdırma; anlaşılır mesaj + log.
+      // Meta'nın API hata mesajı (token/PII içermez) kullanıcıya gösterilir → net teşhis.
       this.logger.warn(
         `ad-radar meta HTTP ${res.status}: ${res.body.slice(0, 200)}`,
       );
       throw new BadRequestException(
-        `Meta Ad Library isteği başarısız (HTTP ${res.status}). Token erişim kapsamını kontrol edin.`,
+        `Meta Ad Library: ${metaErrorMessage(res.body)}`,
       );
     }
 

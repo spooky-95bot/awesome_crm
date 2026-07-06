@@ -2,6 +2,7 @@
 // Entegrasyon provider kataloğu + bağlantı testi. secret=true alanlar şifreli saklanır,
 // diğerleri (config) düz. available=false → panelde "yakında" (henüz bağlanamaz).
 import { iyziAuthHeaders, iyziBaseUrl } from '../../common/http/iyzico-auth';
+import { metaErrorMessage } from '../../common/http/meta-error';
 
 export interface ProviderField {
   key: string;
@@ -206,12 +207,11 @@ export async function testConnection(
           access_token: secrets.accessToken,
         }).toString();
       const res = await fetch(url, { signal: controller.signal });
-      return res.ok
-        ? { ok: true, message: 'Meta Ad Library bağlantısı doğrulandı.' }
-        : {
-            ok: false,
-            message: `Meta hata: HTTP ${res.status} (token/erişim kapsamı?)`,
-          };
+      if (res.ok) {
+        return { ok: true, message: 'Meta Ad Library bağlantısı doğrulandı.' };
+      }
+      const detail = metaErrorMessage(await res.text());
+      return { ok: false, message: `Meta: ${detail}` };
     }
     if (provider === 'iyzico') {
       // BIN sorgusu ile kimlik doğrulama ping'i (imza geçerliyse status:success döner).
