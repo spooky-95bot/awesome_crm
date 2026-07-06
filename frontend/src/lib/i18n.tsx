@@ -554,6 +554,16 @@ export const en: Dict = {
   'trend.connectHint':
     'Connect SerpAPI on the Connections page to see niche trends.',
   'trend.empty': 'No trend data for these keywords.',
+  'trend.range': 'Range',
+  'trend.rangeAll': 'All',
+  'trend.avg': 'avg',
+  'trend.peak': 'peak',
+  'trend.showSeries': 'Show',
+  'trend.hideSeries': 'Hide',
+  'trend.allHidden': 'All series hidden — click a keyword to show it.',
+  'trend.explainTitle': 'What am I looking at?',
+  'trend.explain':
+    'Values are Google Trends’ relative interest index (0–100). 100 = peak popularity for that term in the selected region and period — not the number of searches. Use it to compare terms and spot rising/falling trends, not absolute volume. Filter by date range or toggle a keyword above.',
   'price.importTitle': 'Import competitor prices (CSV)',
   'price.csvHint': 'Header: name,price,currency,url',
   'price.import': 'Import',
@@ -1113,6 +1123,17 @@ export const tr: Dict = {
   'trend.connectHint':
     'Niş trendlerini görmek için Bağlantılar sayfasından SerpAPI bağlayın.',
   'trend.empty': 'Bu anahtar kelimeler için trend verisi yok.',
+  'trend.range': 'Aralık',
+  'trend.rangeAll': 'Tümü',
+  'trend.avg': 'ort.',
+  'trend.peak': 'zirve',
+  'trend.showSeries': 'Göster',
+  'trend.hideSeries': 'Gizle',
+  'trend.allHidden':
+    'Tüm seriler gizli — göstermek için bir anahtar kelimeye tıklayın.',
+  'trend.explainTitle': 'Bu değerler ne?',
+  'trend.explain':
+    'Değerler Google Trends’in göreli ilgi endeksidir (0–100). 100 = o terimin seçilen bölge ve dönemdeki zirve popülaritesi — arama sayısı DEĞİL. Terimleri karşılaştırmak ve yükselen/düşen eğilimi görmek için kullanın, mutlak hacim için değil. Yukarıdan tarih aralığıyla filtreleyin veya bir anahtar kelimeyi aç/kapayın.',
   'price.importTitle': 'Rakip fiyatlarını içe aktar (CSV)',
   'price.csvHint': 'Başlık: name,price,currency,url',
   'price.import': 'İçe aktar',
