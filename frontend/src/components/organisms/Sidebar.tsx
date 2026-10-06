@@ -1,5 +1,5 @@
 'use client';
-// src/components/organisms/Sidebar.tsx — Navigation simplifiée Elysence Partner.
+// src/components/organisms/Sidebar.tsx — Navigation métier Elysence Partner.
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -32,6 +32,39 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       return next;
     });
 
+  const NavLink = ({ href, label }: { href: string; label: string }) => (
+    <a
+      href={href}
+      className="block rounded-md px-3 py-2 text-sm font-medium text-elysence-cream hover:bg-elysence-gold/10"
+    >
+      {label}
+    </a>
+  );
+
+  const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+    <div className="pt-3">
+      <button
+        onClick={() => toggle(id)}
+        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wider text-elysence-gold/70 hover:bg-elysence-gold/10"
+      >
+        <span>{title}</span>
+        <svg
+          className={`h-4 w-4 transition-transform ${open[id] ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open[id] && (
+        <div className="ml-2 space-y-1 border-l border-elysence-gold/20 pl-2">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <aside className="flex w-56 flex-col bg-elysence-espresso p-4">
       <div className="mb-4 flex items-center justify-between px-2">
@@ -50,73 +83,27 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto">
-        {/* Navigation principale */}
-        <a
-          href="/"
-          className="block rounded-md px-3 py-2 text-sm font-medium text-elysence-cream hover:bg-elysence-gold/10"
-        >
-          Tableau de bord
-        </a>
-        {can('lead.read') && (
-          <a
-            href="/leads"
-            className="block rounded-md px-3 py-2 text-sm font-medium text-elysence-cream hover:bg-elysence-gold/10"
-          >
-            Leads
-          </a>
-        )}
-        {can('lead_form.read') && (
-          <a
-            href="/lead-forms"
-            className="block rounded-md px-3 py-2 text-sm font-medium text-elysence-cream hover:bg-elysence-gold/10"
-          >
-            Formulaires
-          </a>
-        )}
+        {/* ACTIVITÉ */}
+        <Section id="activite" title="Activité">
+          <NavLink href="/" label="Tableau de bord" />
+          {can('lead.read') && <NavLink href="/leads" label="Nouvelles demandes" />}
+          {can('contact.read') && <NavLink href="/contacts" label="Clientes" />}
+          {can('meeting.read') && <NavLink href="/meetings" label="Rendez-vous" />}
+        </Section>
 
-        {/* Administration (section repliable) */}
-        <div className="pt-4">
-          <button
-            onClick={() => toggle('admin')}
-            className="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wider text-elysence-gold/70 hover:bg-elysence-gold/10"
-          >
-            <span>Administration</span>
-            <svg
-              className={`h-4 w-4 transition-transform ${open['admin'] ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {open['admin'] && (
-            <div className="ml-2 space-y-1 border-l border-elysence-gold/20 pl-2">
-              {can('user.read') && (
-                <a
-                  href="/users"
-                  className="block rounded-md px-3 py-2 text-sm text-elysence-cream/80 hover:bg-elysence-gold/10"
-                >
-                  Utilisateurs
-                </a>
-              )}
-              {can('branding.manage') && (
-                <a
-                  href="/branding"
-                  className="block rounded-md px-3 py-2 text-sm text-elysence-cream/80 hover:bg-elysence-gold/10"
-                >
-                  Personnalisation
-                </a>
-              )}
-              <a
-                href="/language"
-                className="block rounded-md px-3 py-2 text-sm text-elysence-cream/80 hover:bg-elysence-gold/10"
-              >
-                Langue
-              </a>
-            </div>
-          )}
-        </div>
+        {/* VENTES */}
+        <Section id="ventes" title="Ventes">
+          {can('product.read') && <NavLink href="/products" label="Prestations" />}
+          {can('deal.read') && <NavLink href="/deals" label="Ventes" />}
+          {can('invoice.read') && <NavLink href="/invoices" label="Factures" />}
+        </Section>
+
+        {/* ADMINISTRATION */}
+        <Section id="admin" title="Administration">
+          {can('lead_form.read') && <NavLink href="/lead-forms" label="Formulaires" />}
+          {can('user.read') && <NavLink href="/users" label="Utilisateurs" />}
+          {can('branding.manage') && <NavLink href="/branding" label="Paramètres" />}
+        </Section>
       </nav>
     </aside>
   );

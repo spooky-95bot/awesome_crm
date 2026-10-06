@@ -1,6 +1,5 @@
 'use client';
-// src/components/molecules/Logo.tsx — marka kilidi: özel logo (data URL → <img>) ya da
-// varsayılan işaret + uygulama adı. <img> kullanımı SVG-script XSS'ini önler.
+// src/components/molecules/Logo.tsx — Logo Elysence Partner (image ou texte par défaut).
 import { useBranding } from '@/lib/branding';
 import { LogoMark } from '../atoms/LogoMark';
 

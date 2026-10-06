@@ -27,7 +27,7 @@ const RANGES: { key: string; label: string; points: number | null }[] = [
 
 export function BrandTrends({ brandId }: { brandId: string }) {
   const { t } = useI18n();
-  const [geo, setGeo] = useState('TR');
+  const [geo, setGeo] = useState('FR');
   const [range, setRange] = useState('all');
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [data, setData] = useState<{

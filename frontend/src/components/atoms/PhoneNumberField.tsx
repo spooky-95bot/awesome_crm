@@ -23,7 +23,7 @@ export function PhoneNumberField({
         <PhoneInput
           id={id}
           international
-          defaultCountry="TR"
+          defaultCountry="FR"
           value={value || undefined}
           onChange={(v) => onChange(v ?? '')}
           numberInputProps={{

@@ -37,7 +37,7 @@ export function BrandAdRadar({ brandId }: { brandId: string }) {
   const { t } = useI18n();
   const qc = useQueryClient();
   const manage = can('brand.manage');
-  const [country, setCountry] = useState('TR');
+  const [country, setCountry] = useState('FR');
   const [terms, setTerms] = useState('');
   const [activeOnly, setActiveOnly] = useState(true);
   const [results, setResults] = useState<Ad[] | null>(null);

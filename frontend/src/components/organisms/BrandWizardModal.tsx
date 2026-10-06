@@ -30,7 +30,7 @@ export function BrandWizardModal({
     description: '',
     targetAudience: '',
     priceBand: 'mid',
-    markets: 'TR',
+    markets: 'FR',
     keywords: '',
     knownCompetitors: '',
   });
@@ -104,7 +104,7 @@ export function BrandWizardModal({
         <FormField
           id="b-markets"
           label={t('brand.markets')}
-          placeholder="TR, DE"
+          placeholder="FR, BE"
           value={f.markets}
           onChange={(e) => set('markets', e.target.value)}
         />
