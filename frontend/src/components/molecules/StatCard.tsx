@@ -12,9 +12,9 @@ export function StatCard({
 }) {
   return (
     <Card className="p-5">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-gray-900">{value}</p>
-      {hint && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
+      <p className="text-sm text-elysence-ink/50">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-elysence-ink">{value}</p>
+      {hint && <p className="mt-1 text-xs text-elysence-ink/40">{hint}</p>}
     </Card>
   );
 }

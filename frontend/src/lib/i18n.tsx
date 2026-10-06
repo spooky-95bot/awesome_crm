@@ -15,7 +15,7 @@ export type Dict = Record<string, string>;
 
 // --- İngilizce (şablon kaynağı: tüm anahtarlar burada tanımlı) ---
 export const en: Dict = {
-  'app.title': 'CRM',
+  'app.title': 'Elysence Partner',
   // Navigation
   'nav.dashboard': 'Dashboard',
   'nav.leads': 'Leads',
@@ -590,7 +590,7 @@ export const en: Dict = {
 
 // --- Türkçe ---
 export const tr: Dict = {
-  'app.title': 'CRM',
+  'app.title': 'Elysence Partner',
   'nav.dashboard': 'Panel',
   'nav.leads': "Lead'ler",
   'nav.deals': 'Anlaşmalar',
@@ -1185,7 +1185,7 @@ export const fr: Dict = {
   'ai.toneFormal': 'Formel',
   'ai.toneFriendly': 'Amical',
   'ai.toneProfessional': 'Professionnel',
-  'app.title': 'CRM',
+  'app.title': 'Elysence Partner',
   'ar.active': 'Actives uniquement',
   'ar.all': 'Toutes',
   'ar.connectHint': 'Connectez Meta Ad Library sur la page Connexions pour rechercher des publicités de niche.',

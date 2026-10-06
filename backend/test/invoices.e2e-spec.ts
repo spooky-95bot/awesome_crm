@@ -31,8 +31,8 @@ describe('Invoices / Finance (e2e)', () => {
   const ts = Date.now();
   const financeEmail = `fin_${ts}@crm.dev`;
   const salesEmail = `inv_sales_${ts}@crm.dev`;
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@crm.dev';
-  const adminPw = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
+  const adminEmail = process.env.SEED_ADMIN_EMAIL!;
+  const adminPw = process.env.SEED_ADMIN_PASSWORD!;
 
   const auth = (t: string) => ({ Authorization: `Bearer ${t}` });
   const login = (email: string, password: string) =>

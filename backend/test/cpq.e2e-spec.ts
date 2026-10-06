@@ -23,8 +23,8 @@ describe('CPQ — ürün/teklif/fatura (e2e)', () => {
   let quoteId: string;
   let invoiceId: string;
 
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@crm.dev';
-  const adminPw = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
+  const adminEmail = process.env.SEED_ADMIN_EMAIL!;
+  const adminPw = process.env.SEED_ADMIN_PASSWORD!;
   const auth = (t: string) => ({ Authorization: `Bearer ${t}` });
 
   beforeAll(async () => {

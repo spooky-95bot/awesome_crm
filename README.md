@@ -31,7 +31,7 @@ reports, signed webhooks, AI assistant, and multi-tenancy.
 - [Modules & API surface](#modules--api-surface)
 - [Roadmap](#roadmap)
 - [Quick start](#quick-start)
-- [Demo & test logins](#demo--test-logins)
+- [Admin bootstrap & demo data](#admin-bootstrap--demo-data)
 - [Environment variables](#environment-variables)
 - [Tests & quality](#tests--quality)
 - [Project structure](#project-structure)
@@ -223,18 +223,16 @@ All endpoints are served under the `/api/v1` prefix (Swagger: `/api/docs`).
 
 ```bash
 cp .env.example .env                  # root .env: fill in POSTGRES_* + JWT secrets
-docker compose -p crm up -d --build   # db + backend(:3000) + frontend(:3001) + mailhog(:8025) + tunnel
-# Backend applies migrations on startup. Panel: http://localhost:3001 · Health: /api/v1/health
-docker compose -p crm exec backend npm run seed        # roles + permissions + admin + pipeline
-docker compose -p crm exec backend npm run seed:demo   # role-based test users + sample data
-# Shareable tunnel address (Cloudflare quick tunnel):
-docker compose -p crm logs tunnel | grep trycloudflare
+docker compose -p crm up -d --build   # local-only panel/API ports + internal PostgreSQL + MailHog
+# Local panel: http://127.0.0.1:3101 · Local API health: http://127.0.0.1:3100/api/v1/health
+docker compose -p crm exec backend npm run seed        # requires private SEED_ADMIN_* values
+# A quick tunnel is optional and development-only; do not use it for production intake.
 ```
 
-> All services run with `restart: unless-stopped` → they survive terminal/session
-> shutdown. `frontend` proxies `/api` to `backend:3000` over the internal network
-> (BACKEND_URL is baked in via a build arg). Because the tunnel is free, the address
-> changes when the container restarts; use a named Cloudflare tunnel for a stable address.
+> Host ports for the API, panel and MailHog bind to loopback only. `frontend` proxies
+> `/api` to `backend:3000` over the internal Docker network. A stable public HTTPS
+> origin must be configured separately before enabling public lead intake; the dev
+> quick-tunnel profile is not a production solution.
 
 ### Option B — Backend locally, DB only in Docker
 
@@ -266,22 +264,12 @@ npm run dev        # http://localhost:3001  (/api → proxied to backend)
 
 ---
 
-## Demo & test logins
+## Admin bootstrap & demo data
 
-```bash
-cd backend && npm run seed && npm run seed:demo   # role-based users + sample data
-```
-
-| Role | Email | Password |
-|------|-------|----------|
-| ADMIN | `admin@crm.dev` | `ChangeMe!2026` |
-| MANAGER | `manager@crm.dev` | `Demo!2026` |
-| SALES | `sales@crm.dev` | `Demo!2026` |
-| FINANCE | `finance@crm.dev` | `Demo!2026` |
-| VIEWER | `viewer@crm.dev` | `Demo!2026` |
-
-> Roles see different things: SALES cannot see invoice amounts (masked), FINANCE can;
-> VIEWER is read-only; menu items are shown by permission.
+`npm run seed` requires `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` from a private
+secret store. Production rejects missing/example credentials. There are no bundled
+login accounts or passwords. `npm run seed:demo` is development-only and requires
+an explicitly supplied `DEMO_SEED_PASSWORD`; never run it against production data.
 
 ---
 

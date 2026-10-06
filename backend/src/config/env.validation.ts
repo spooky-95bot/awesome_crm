@@ -13,9 +13,13 @@ export const envValidationSchema = Joi.object({
     .uri({ scheme: ['postgresql', 'postgres'] })
     .required(),
 
-  JWT_ACCESS_SECRET: Joi.string().min(16).required(),
+  JWT_ACCESS_SECRET: Joi.string()
+    .min(32)
+    .pattern(/^(?!change[-_ ]?me|example|sample|demo|placeholder|replace[-_ ]?me|password)/i)
+    .required(),
   JWT_REFRESH_SECRET: Joi.string()
-    .min(16)
+    .min(32)
+    .pattern(/^(?!change[-_ ]?me|example|sample|demo|placeholder|replace[-_ ]?me|password)/i)
     .required()
     .invalid(Joi.ref('JWT_ACCESS_SECRET')) // access ve refresh sırrı farklı olmalı
     .messages({
@@ -27,13 +31,28 @@ export const envValidationSchema = Joi.object({
   BCRYPT_COST: Joi.number().min(10).max(15).default(12),
 
   CORS_ORIGINS: Joi.string().default('http://localhost:3001'),
-  COOKIE_SECURE: Joi.boolean().default(false),
+  COOKIE_SECURE: Joi.boolean().when('NODE_ENV', {
+    is: 'production',
+    then: Joi.boolean().valid(true).required(),
+    otherwise: Joi.boolean().default(false),
+  }),
 
   THROTTLE_TTL: Joi.number().default(60),
   THROTTLE_LIMIT: Joi.number().default(5),
 
-  SEED_ADMIN_EMAIL: Joi.string().email().optional(),
-  SEED_ADMIN_PASSWORD: Joi.string().optional(),
+  SEED_ADMIN_EMAIL: Joi.string().email().when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().email().pattern(/@(?!crm\.dev$)/i).pattern(/@(?!example\.invalid$)/i).required(),
+    otherwise: Joi.string().email().optional(),
+  }),
+  SEED_ADMIN_PASSWORD: Joi.string().when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string()
+      .min(20)
+      .pattern(/^(?!change[-_ ]?me|example|sample|demo|placeholder|replace[-_ ]?me|password)/i)
+      .required(),
+    otherwise: Joi.string().min(16).optional(),
+  }),
 
   // --- Faz 5: Entegrasyonlar ---
   MAIL_DRIVER: Joi.string().valid('simulated', 'smtp').default('simulated'),
@@ -58,8 +77,15 @@ export const envValidationSchema = Joi.object({
   // base64 kodlu 32 baytlık anahtar. Yoksa bağlantı sır işlemleri açık hata döner (fail-safe).
   APP_ENCRYPTION_KEY: Joi.string().allow('').optional(),
 
-  // --- v3.2: OAuth redirect tabanı (sağlayıcı konsoluna girilen callback URL'in kökü).
-  APP_PUBLIC_URL: Joi.string().uri().default('http://localhost:3000'),
-  // Panel adresi (OAuth sonrası kullanıcı buraya döner).
-  APP_PANEL_URL: Joi.string().uri().default('http://localhost:3001'),
+  // Production OAuth/public URLs must be real HTTPS origins, never HTTP localhost defaults.
+  APP_PUBLIC_URL: Joi.string().when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().uri({ scheme: ['https'] }).required(),
+    otherwise: Joi.string().uri().default('http://localhost:3000'),
+  }),
+  APP_PANEL_URL: Joi.string().when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().uri({ scheme: ['https'] }).required(),
+    otherwise: Joi.string().uri().default('http://localhost:3001'),
+  }),
 });

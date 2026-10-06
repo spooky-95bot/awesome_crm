@@ -7,9 +7,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-acik_kaynak_crm}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in the private environment}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the private environment}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in the private environment}
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,12 +26,12 @@ services:
     env_file: .env
     environment:
       # DB'ye servis adıyla bağlan (compose iç ağı).
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-acik_kaynak_crm}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:?Set POSTGRES_DB}?schema=public
     depends_on:
       db:
         condition: service_healthy
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3100:3000'
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/v1/health']
       interval: 15s
@@ -43,7 +43,7 @@ services:
     image: mailhog/mailhog
     restart: unless-stopped
     ports:
-      - '8025:8025' # web arayüzü (yakalanan e-postalar)
+      - '127.0.0.1:8025:8025' # local-only mail capture
     networks: [internal]
 
   # Next.js paneli. /api isteklerini sunucu tarafında backend'e proxy'ler.
@@ -57,13 +57,13 @@ services:
     depends_on:
       - backend
     ports:
-      - '3001:3001'
+      - '127.0.0.1:3101:3001'
     networks: [internal]
 
-  # Cloudflare hızlı tüneli — paneli internetten erişilebilir kılar.
-  # restart: unless-stopped → oturum/teardown'dan bağımsız ayakta kalır.
-  # URL'i loglardan oku: docker compose logs tunnel | grep trycloudflare
+  # Quick tunnel is development-only; it is not a production API endpoint.
+  # Never enable this profile for Elysence lead intake or persistent CRM access.
   tunnel:
+    profiles: ["dev"]
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     command: tunnel --no-autoupdate --url http://frontend:3001

@@ -39,7 +39,7 @@ export function DashboardTemplate({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-elysence-paper">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -62,7 +62,7 @@ export function DashboardTemplate({
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-auto p-4 lg:p-6">
-          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-xl font-semibold text-elysence-ink">
             {titleText}
           </h2>
           {children}

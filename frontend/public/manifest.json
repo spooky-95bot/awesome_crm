@@ -1,17 +1,16 @@
 {
-  "name": "Açık Kaynak CRM",
-  "short_name": "CRM",
-  "description": "API-First açık kaynak CRM",
+  "name": "Elysence Partner",
+  "short_name": "Elysence",
+  "description": "CRM Elysence Partner — Gestion des leads et clients",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "theme_color": "#80602d",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/logo-elysence.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/svg+xml"
     }
   ]
 }

@@ -40,8 +40,8 @@ describe('Deals / Kanban (e2e)', () => {
   const salesEmail = `deal_sales_${ts}@crm.dev`;
   const sales2Email = `deal_sales2_${ts}@crm.dev`;
   const viewerEmail = `deal_viewer_${ts}@crm.dev`;
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@crm.dev';
-  const adminPw = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
+  const adminEmail = process.env.SEED_ADMIN_EMAIL!;
+  const adminPw = process.env.SEED_ADMIN_PASSWORD!;
 
   const login = (email: string, password: string) =>
     request(app.getHttpServer())

@@ -22,11 +22,11 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-gray-200 bg-white px-3 py-2 lg:px-6 lg:py-3">
+    <header className="flex items-center justify-between border-b border-elysence-gold/20 bg-elysence-paper px-3 py-2 lg:px-6 lg:py-3">
       {onMenuClick && (
         <button
           onClick={onMenuClick}
-          className="mr-2 rounded p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
+          className="mr-2 rounded p-2 text-elysence-ink/70 hover:bg-elysence-gold/5 lg:hidden"
           aria-label="Ouvrir le menu"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +54,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </option>
           ))}
         </select>
-        <span className="text-sm text-gray-600">{user?.email}</span>
+        <span className="text-sm text-elysence-ink/70">{user?.email}</span>
         {user?.roles.map((r) => (
           <Badge key={r} tone="indigo">
             {r}

@@ -4,14 +4,14 @@ import './globals.css';
 import { Providers } from '@/lib/providers';
 
 export const metadata: Metadata = {
-  title: 'Açık Kaynak CRM',
-  description: 'API-First açık kaynak CRM',
+  title: 'Elysence Partner',
+  description: 'CRM Elysence Partner — Gestion des leads et clients',
   manifest: '/manifest.json',
-  icons: { icon: '/icon.svg' },
+  icons: { icon: '/logo-elysence.svg' },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#4f46e5',
+  themeColor: '#80602d',
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
+    <html lang="fr">
       <body>
         <Providers>{children}</Providers>
       </body>

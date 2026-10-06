@@ -31,8 +31,8 @@ describe('Multi-tenancy — JWT claim izolasyonu (e2e)', () => {
   let stageId: string;
   let dealA: string;
 
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@crm.dev';
-  const adminPw = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
+  const adminEmail = process.env.SEED_ADMIN_EMAIL!;
+  const adminPw = process.env.SEED_ADMIN_PASSWORD!;
   const emailA = `ta_${ts}@crm.dev`;
   const emailB = `tb_${ts}@crm.dev`;
   const userPw = 'TenantPw!2026';

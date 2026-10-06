@@ -12,8 +12,17 @@ import {
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@crm.dev';
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.trim();
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (
+    !adminEmail ||
+    !adminPassword ||
+    /@crm\.dev$/i.test(adminEmail) ||
+    adminPassword.length < 20 ||
+    /^(change[-_ ]?me|example|sample|demo|placeholder|replace[-_ ]?me|password)/i.test(adminPassword)
+  ) {
+    throw new Error('A private, non-placeholder SEED_ADMIN_EMAIL and strong SEED_ADMIN_PASSWORD are required before seeding.');
+  }
   const bcryptCost = Number(process.env.BCRYPT_COST ?? 12);
 
   // 1) Tüm izinler.

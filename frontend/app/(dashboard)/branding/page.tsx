@@ -80,7 +80,7 @@ export default function BrandingPage() {
     setLogo(url);
   };
 
-  const name = appName || 'AwesomeCRM';
+  const name = appName || 'Elysence Partner';
   const Preview = () =>
     logo ? (
       // eslint-disable-next-line @next/next/no-img-element

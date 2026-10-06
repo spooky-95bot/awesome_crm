@@ -42,13 +42,13 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   });
 
   return (
-    <aside className="flex w-56 flex-col bg-gray-900 p-4">
+    <aside className="flex w-56 flex-col bg-elysence-espresso p-4">
       <div className="mb-4 flex items-center justify-between px-2">
-        <Logo size={28} textClass="text-base text-white" />
+        <Logo size={28} textClass="text-base text-elysence-cream" />
         {onClose && (
           <button
             onClick={onClose}
-            className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-white lg:hidden"
+            className="rounded p-1 text-elysence-gold/70 hover:bg-elysence-gold/10 hover:text-elysence-gold lg:hidden"
             aria-label="Fermer le menu"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

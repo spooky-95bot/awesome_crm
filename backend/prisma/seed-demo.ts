@@ -5,7 +5,6 @@ import { PrismaClient, InvoiceStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
-const DEMO_PASSWORD = 'Demo!2026';
 
 const DEMO_USERS = [
   { email: 'manager@crm.dev', firstName: 'Mira', lastName: 'Manager', role: 'MANAGER' },
@@ -15,8 +14,15 @@ const DEMO_USERS = [
 ];
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' || process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error('Demo seeding is disabled unless ALLOW_DEMO_SEED=true outside production.');
+  }
+  const demoPassword = process.env.DEMO_SEED_PASSWORD;
+  if (!demoPassword || demoPassword.length < 16 || /^(change[-_ ]?me|example|sample|demo|placeholder|replace[-_ ]?me|password)/i.test(demoPassword)) {
+    throw new Error('A private, non-placeholder DEMO_SEED_PASSWORD of at least 16 characters is required.');
+  }
   const cost = Number(process.env.BCRYPT_COST ?? 12);
-  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, cost);
+  const passwordHash = await bcrypt.hash(demoPassword, cost);
 
   // 1) Rol bazlı test kullanıcıları
   const userIdByRole: Record<string, string> = {};
@@ -158,11 +164,7 @@ async function main() {
     });
   }
 
-  console.log(
-    `Demo seed tamam. Test kullanıcıları (parola: ${DEMO_PASSWORD}): ${DEMO_USERS.map(
-      (u) => u.email,
-    ).join(', ')} + admin@crm.dev`,
-  );
+  console.log(`Demo records seeded for local testing (${DEMO_USERS.length} account fixtures).`);
 }
 
 main()

@@ -12,7 +12,7 @@ export function Logo({
   textClass?: string;
 }) {
   const { data } = useBranding();
-  const name = data?.appName || 'AwesomeCRM';
+  const name = data?.appName || 'Elysence Partner';
 
   if (data?.logo) {
     return (

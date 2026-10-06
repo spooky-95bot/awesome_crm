@@ -22,7 +22,7 @@ const sha256 = (t: string) => createHash('sha256').update(t).digest('hex');
 
 const makeUser = (overrides: Record<string, unknown> = {}) => ({
   id: 'user-1',
-  email: 'admin@crm.dev',
+  email: 'admin@example.invalid',
   passwordHash: 'hashed',
   firstName: 'System',
   lastName: 'Admin',
@@ -110,7 +110,7 @@ describe('AuthService', () => {
     repo.findByEmail.mockResolvedValue(makeUser());
     await expect(
       service.register({
-        email: 'admin@crm.dev',
+        email: 'admin@example.invalid',
         password: 'S3cure!Pass00',
         firstName: 'X',
         lastName: 'Y',
@@ -123,7 +123,7 @@ describe('AuthService', () => {
     repo.findByEmail.mockResolvedValue(makeUser());
     mockCompare.mockResolvedValue(false);
     await expect(
-      service.validateAndLogin({ email: 'admin@crm.dev', password: 'wrong' }),
+      service.validateAndLogin({ email: 'admin@example.invalid', password: 'wrong' }),
     ).rejects.toMatchObject({ message: 'Geçersiz kimlik bilgileri' });
   });
 
@@ -142,7 +142,7 @@ describe('AuthService', () => {
     repo.findByEmail.mockResolvedValue(makeUser({ isActive: false }));
     mockCompare.mockResolvedValue(true);
     await expect(
-      service.validateAndLogin({ email: 'admin@crm.dev', password: 'ok' }),
+      service.validateAndLogin({ email: 'admin@example.invalid', password: 'ok' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
@@ -154,7 +154,7 @@ describe('AuthService', () => {
     repo.updateRefreshTokenHash.mockResolvedValue({});
 
     const result = await service.validateAndLogin({
-      email: 'admin@crm.dev',
+      email: 'admin@example.invalid',
       password: 'ok',
     });
 

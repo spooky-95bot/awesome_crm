@@ -21,7 +21,7 @@ export function DataTable<T extends { id: string }>({
   return (
     <Card className="overflow-x-auto">
       <table className="w-full min-w-[600px] text-sm">
-        <thead className="bg-gray-50 text-left text-gray-500">
+        <thead className="bg-elysence-paper text-left text-elysence-ink/50">
           <tr>
             {columns.map((c) => (
               <th key={c.key} className="whitespace-nowrap px-4 py-3 font-medium">
@@ -30,7 +30,7 @@ export function DataTable<T extends { id: string }>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-elysence-gold/10">
           {rows.length === 0 ? (
             <tr>
               <td
@@ -45,10 +45,10 @@ export function DataTable<T extends { id: string }>({
               <tr
                 key={row.id}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
+                className={`hover:bg-elysence-paper ${onRowClick ? 'cursor-pointer' : ''}`}
               >
                 {columns.map((c) => (
-                  <td key={c.key} className="whitespace-nowrap px-4 py-3 text-gray-700">
+                  <td key={c.key} className="whitespace-nowrap px-4 py-3 text-elysence-ink/80">
                     {c.render(row)}
                   </td>
                 ))}

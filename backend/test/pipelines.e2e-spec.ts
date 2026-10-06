@@ -38,8 +38,8 @@ describe('Pipelines / stages (e2e)', () => {
   const pw = 'S3cure!Passw0rd';
   const ts = Date.now();
   const salesEmail = `pl_sales_${ts}@crm.dev`;
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@crm.dev';
-  const adminPw = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
+  const adminEmail = process.env.SEED_ADMIN_EMAIL!;
+  const adminPw = process.env.SEED_ADMIN_PASSWORD!;
   const auth = (t: string) => ({ Authorization: `Bearer ${t}` });
   const login = (e: string, p: string) =>
     request(app.getHttpServer())
