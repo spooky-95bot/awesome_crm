@@ -48,9 +48,12 @@ export default function LeadFormsPage() {
 
   return (
     <DashboardTemplate title="page.leadForms">
+      <p className="mb-4 text-sm text-gray-600">
+        Gérez les formulaires qui créent les nouvelles demandes.
+      </p>
       {manage && (
         <div className="mb-4">
-          <Button onClick={() => setCreating(true)}>{t('btn.newForm')}</Button>
+          <Button onClick={() => setCreating(true)}>+ Nouveau formulaire</Button>
         </div>
       )}
 

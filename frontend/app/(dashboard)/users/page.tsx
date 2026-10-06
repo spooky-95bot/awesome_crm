@@ -71,9 +71,12 @@ export default function UsersPage() {
 
   return (
     <DashboardTemplate title="page.users">
+      <p className="mb-4 text-sm text-gray-600">
+        Gérez les personnes autorisées à accéder à Elysence Partner.
+      </p>
       {can('user.create') && (
         <div className="mb-4">
-          <Button onClick={() => setCreating(true)}>{t('btn.newUser')}</Button>
+          <Button onClick={() => setCreating(true)}>+ Nouvel utilisateur</Button>
         </div>
       )}
 

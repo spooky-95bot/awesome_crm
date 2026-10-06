@@ -10,6 +10,7 @@ export interface Country {
 }
 
 export const COUNTRIES: Country[] = [
+  { iso2: 'FR', name: 'France', dial: '33', flag: '🇫🇷' },
   { iso2: 'TR', name: 'Türkiye', dial: '90', flag: '🇹🇷' },
   { iso2: 'US', name: 'United States', dial: '1', flag: '🇺🇸' },
   { iso2: 'GB', name: 'United Kingdom', dial: '44', flag: '🇬🇧' },
@@ -69,7 +70,7 @@ export const COUNTRIES: Country[] = [
 
 export function findCountry(iso2?: string): Country {
   const c = COUNTRIES.find((x) => x.iso2 === (iso2 ?? '').toUpperCase());
-  return c ?? COUNTRIES[0]; // varsayılan TR
+  return c ?? COUNTRIES[0]; // varsayılan FR
 }
 
 // E.164 birleştir: dial + yalnız-rakam ulusal numara. Baştaki 0 düşürülür.
