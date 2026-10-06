@@ -10,7 +10,7 @@ import { Logo } from '../molecules/Logo';
 
 const LS_KEY = 'crm_nav_open';
 
-export function Sidebar() {
+export function Sidebar({ onClose }: { onClose?: () => void }) {
   const { can } = useAuth();
   const { t } = useI18n();
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -43,8 +43,19 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-56 flex-col bg-gray-900 p-4">
-      <div className="mb-4 px-2">
+      <div className="mb-4 flex items-center justify-between px-2">
         <Logo size={28} textClass="text-base text-white" />
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-white lg:hidden"
+            aria-label="Fermer le menu"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto">
         {/* Genel (her zaman görünür) */}

@@ -8,7 +8,7 @@ import { Badge } from '../atoms/Badge';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
 
-export function Topbar() {
+export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
   const { t, lang, setLang, languages } = useI18n();
   const router = useRouter();
@@ -22,8 +22,19 @@ export function Topbar() {
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-      <form onSubmit={submit} className="w-72">
+    <header className="flex items-center justify-between border-b border-gray-200 bg-white px-3 py-2 lg:px-6 lg:py-3">
+      {onMenuClick && (
+        <button
+          onClick={onMenuClick}
+          className="mr-2 rounded p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
+          aria-label="Ouvrir le menu"
+        >
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      )}
+      <form onSubmit={submit} className="hidden flex-1 sm:block sm:max-w-xs lg:w-72">
         <Input
           placeholder={t('topbar.search')}
           value={q}

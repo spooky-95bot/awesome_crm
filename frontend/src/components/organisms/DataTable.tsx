@@ -19,12 +19,12 @@ export function DataTable<T extends { id: string }>({
   onRowClick?: (row: T) => void;
 }) {
   return (
-    <Card className="overflow-hidden">
-      <table className="w-full text-sm">
+    <Card className="overflow-x-auto">
+      <table className="w-full min-w-[600px] text-sm">
         <thead className="bg-gray-50 text-left text-gray-500">
           <tr>
             {columns.map((c) => (
-              <th key={c.key} className="px-4 py-3 font-medium">
+              <th key={c.key} className="whitespace-nowrap px-4 py-3 font-medium">
                 {c.header}
               </th>
             ))}
@@ -48,7 +48,7 @@ export function DataTable<T extends { id: string }>({
                 className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
               >
                 {columns.map((c) => (
-                  <td key={c.key} className="px-4 py-3 text-gray-700">
+                  <td key={c.key} className="whitespace-nowrap px-4 py-3 text-gray-700">
                     {c.render(row)}
                   </td>
                 ))}
