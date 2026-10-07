@@ -140,6 +140,7 @@ model Deal {
   activities   DealActivity[]
   invoices     Invoice[]
   quotes       Quote[]
+  saleLineItems SaleLineItem[]
   // Faz 6 multi-tenancy: nullable (kademeli geçiş). Bağlam aktifse otomatik atanır/filtrelenir.
   tenantId     String?
   createdAt    DateTime       @default(now())
@@ -164,6 +165,22 @@ model DealActivity {
   deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
   @@index([dealId, createdAt])
+}
+
+model SaleLineItem {
+  id          String   @id @default(uuid())
+  dealId      String
+  productId   String?
+  description String
+  quantity    Decimal  @db.Decimal(12, 3)
+  unitPrice   Decimal  @db.Decimal(14, 2)
+  lineTotal   Decimal  @db.Decimal(14, 2)
+  createdAt   DateTime @default(now())
+  deal        Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([dealId])
+  @@index([productId])
 }
 
 // ===== Faz 4 — Finans & Fatura =====
@@ -208,15 +225,18 @@ model Invoice {
 }
 
 model InvoiceLineItem {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   invoiceId   String
+  productId   String?
   description String
   quantity    Decimal @db.Decimal(12, 3)
   unitPrice   Decimal @db.Decimal(14, 2)
   lineTotal   Decimal @db.Decimal(14, 2)
   invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([invoiceId])
+  @@index([productId])
 }
 
 model Payment {
@@ -278,6 +298,8 @@ model Product {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   quoteItems  QuoteLineItem[]
+  saleLineItems SaleLineItem[]
+  invoiceLineItems InvoiceLineItem[]
 
   @@index([active])
   @@index([tenantId])

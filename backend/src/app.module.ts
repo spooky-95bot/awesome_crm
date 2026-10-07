@@ -16,6 +16,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DealsModule } from './modules/deals/deals.module';
+import { SalesModule } from './modules/sales/sales.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { LeadFormsModule } from './modules/lead-forms/lead-forms.module';
 import { PipelinesModule } from './modules/pipelines/pipelines.module';
@@ -71,6 +72,7 @@ import { TenantMiddleware } from './common/tenant/tenant.middleware';
     UsersModule,
     RolesModule,
     DealsModule,
+    SalesModule,
     LeadsModule,
     LeadFormsModule,
     PipelinesModule,
