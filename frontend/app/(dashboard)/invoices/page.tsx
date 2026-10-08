@@ -117,6 +117,37 @@ export default function InvoicesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Pré-remplissage depuis une cliente (?contactId=) : nom + dernière vente.
+  useEffect(() => {
+    const cid = new URLSearchParams(window.location.search).get('contactId');
+    if (!cid) return;
+    void (async () => {
+      try {
+        const c = unwrap<{ firstName: string; lastName: string; email: string | null }>(
+          (await api.get(`/contacts/${cid}`)).data,
+        );
+        setCustomerName(`${c.firstName} ${c.lastName}`);
+        const sales = unwrap<
+          { items: { description: string; quantity: number; unitPrice: number }[] }[]
+        >((await api.get('/sales', { params: { contactId: cid } })).data);
+        const last = sales[0];
+        if (last && last.items.length > 0) {
+          setLines(
+            last.items.map((it) => ({
+              description: it.description,
+              quantity: String(it.quantity),
+              unitPrice: String(it.unitPrice),
+            })),
+          );
+        }
+        setCreating(true);
+      } catch {
+        /* ignore */
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // v3.2 — bağlı muhasebe sağlayıcısına gönder (QuickBooks/Xero).
   const accSync = useMutation({
     mutationFn: async (id: string) =>
