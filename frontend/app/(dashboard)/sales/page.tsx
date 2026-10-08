@@ -70,7 +70,7 @@ export default function SalesPage() {
   const contacts = useQuery({
     queryKey: ['contacts', 'for-sales'],
     queryFn: async () =>
-      unwrap<{ data: Contact[] }>((await api.get('/contacts', { params: { limit: 200 } })).data),
+      unwrap<{ data: Contact[] }>((await api.get('/contacts', { params: { limit: 100 } })).data),
     enabled: creating,
   });
 

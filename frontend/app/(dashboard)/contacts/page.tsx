@@ -20,7 +20,7 @@ export default function ContactsPage() {
   const contacts = useQuery({
     queryKey: ['contacts'],
     queryFn: async () =>
-      unwrap<Contact[]>((await api.get('/contacts', { params: { limit: 200 } })).data),
+      unwrap<Contact[]>((await api.get('/contacts', { params: { limit: 100 } })).data),
   });
 
   const companies = useQuery({
