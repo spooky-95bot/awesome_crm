@@ -94,7 +94,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         {/* VENTES */}
         <Section id="ventes" title="Ventes">
           {can('product.read') && <NavLink href="/products" label="Prestations" />}
-          {can('deal.read') && <NavLink href="/deals" label="Ventes" />}
+          {can('deal.read') && <NavLink href="/sales" label="Ventes" />}
           {can('invoice.read') && <NavLink href="/invoices" label="Factures" />}
         </Section>
 

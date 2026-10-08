@@ -9,6 +9,16 @@ import { DashboardTemplate } from '@/components/templates/DashboardTemplate';
 import { Spinner } from '@/components/atoms/Spinner';
 import type { UnqualifiedLead } from '@/types';
 
+interface SalesStats {
+  totalRevenue: number;
+  saleCount: number;
+  averageBasket: number;
+  topProducts: { name: string; count: number; revenue: number }[];
+}
+
+const eur = (n: number) =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n);
+
 export default function DashboardHome() {
   const { can } = useAuth();
   const { t } = useI18n();
@@ -19,15 +29,65 @@ export default function DashboardHome() {
       unwrap<UnqualifiedLead[]>((await api.get('/leads', { params: { limit: 100 } })).data),
   });
 
+  const salesStats = useQuery({
+    queryKey: ['sales', 'stats'],
+    enabled: can('deal.read'),
+    queryFn: async () => unwrap<SalesStats>((await api.get('/sales/stats')).data),
+  });
+
   const allLeads = leads.data ?? [];
   const newLeads = allLeads.filter((l) => l.status === 'NEW');
   const workingLeads = allLeads.filter((l) => l.status === 'WORKING');
+  const stats = salesStats.data;
 
   return (
     <DashboardTemplate title="page.dashboard">
       <p className="mb-6 text-sm text-gray-600">
         Visualisez les demandes qui nécessitent votre attention.
       </p>
+
+      {/* Activité commerciale */}
+      {can('deal.read') && stats && stats.saleCount > 0 && (
+        <section className="mb-6">
+          <h2 className="mb-3 text-lg font-semibold text-gray-900">Activité</h2>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-lg border border-gray-200 bg-white p-3 text-center shadow-sm">
+              <p className="text-xs text-gray-500">Chiffre d&apos;affaires</p>
+              <p className="mt-1 text-lg font-semibold text-elysence-gold">
+                {eur(stats.totalRevenue)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-white p-3 text-center shadow-sm">
+              <p className="text-xs text-gray-500">Ventes</p>
+              <p className="mt-1 text-lg font-semibold text-gray-900">{stats.saleCount}</p>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-white p-3 text-center shadow-sm">
+              <p className="text-xs text-gray-500">Panier moyen</p>
+              <p className="mt-1 text-lg font-semibold text-gray-900">
+                {eur(stats.averageBasket)}
+              </p>
+            </div>
+          </div>
+
+          {stats.topProducts.length > 0 && (
+            <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+              <p className="mb-2 text-sm font-medium text-gray-700">
+                Prestations les plus vendues
+              </p>
+              <ul className="space-y-1">
+                {stats.topProducts.slice(0, 5).map((p) => (
+                  <li key={p.name} className="flex justify-between text-sm text-gray-700">
+                    <span className="truncate">{p.name}</span>
+                    <span className="ml-2 shrink-0 text-gray-500">
+                      {p.count} · {eur(p.revenue)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
 
       {leads.isLoading ? (
         <Spinner />
