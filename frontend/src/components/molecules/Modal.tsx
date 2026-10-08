@@ -26,7 +26,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             className="text-elysence-ink/40 hover:text-elysence-ink/70"
-            aria-label="Kapat"
+            aria-label="Fermer"
           >
             ✕
           </button>
