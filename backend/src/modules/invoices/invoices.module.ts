@@ -3,10 +3,11 @@ import { Module } from '@nestjs/common';
 import { InvoicesController } from './invoices.controller';
 import { InvoicesService } from './invoices.service';
 import { InvoicesRepository } from './invoices.repository';
+import { InvoicePdfService } from './invoice-pdf.service';
 
 @Module({
   controllers: [InvoicesController],
-  providers: [InvoicesService, InvoicesRepository],
+  providers: [InvoicesService, InvoicesRepository, InvoicePdfService],
   exports: [InvoicesService],
 })
 export class InvoicesModule {}

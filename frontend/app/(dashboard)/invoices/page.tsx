@@ -25,6 +25,11 @@ const statusTone: Record<string, 'gray' | 'green' | 'amber' | 'red' | 'blue'> = 
   CANCELLED: 'red',
 };
 
+const eur = (n: string | number, currency: string) =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currency || 'EUR' }).format(
+    Number(n) || 0,
+  );
+
 interface Line {
   description: string;
   quantity: string;
@@ -163,6 +168,23 @@ export default function InvoicesPage() {
     onError: () => alert(t('acc.notConnected')),
   });
 
+  // Télécharge le PDF de la facture (requête authentifiée -> blob -> download).
+  const downloadPdf = async (id: string, number: string | null) => {
+    try {
+      const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data as Blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `facture-${number ?? id.slice(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Téléchargement du PDF impossible.');
+    }
+  };
+
   const setLine = (i: number, patch: Partial<Line>) =>
     setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
 
@@ -181,9 +203,7 @@ export default function InvoicesPage() {
       header: t('col.amount'),
       render: (r) =>
         financial ? (
-          <span className="font-medium">
-            {r.total} {r.currency}
-          </span>
+          <span className="font-medium">{eur(r.total ?? 0, r.currency)}</span>
         ) : (
           <span className="text-gray-400">{t('col.hidden')}</span>
         ),
@@ -193,6 +213,13 @@ export default function InvoicesPage() {
       header: t('col.action'),
       render: (r) => (
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            className="px-2 py-1 text-xs"
+            onClick={() => downloadPdf(r.id, r.number)}
+          >
+            📄 PDF
+          </Button>
           {r.status === 'DRAFT' && can('invoice.update') && (
             <Button
               variant="secondary"
