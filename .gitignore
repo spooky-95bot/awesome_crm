@@ -43,7 +43,6 @@ Thumbs.db
 .cache/
 tmp/
 
-# GitHub'da yalnız İngilizce: Türkçe docs + CLAUDE.md + Türkçe README lokalde kalır
+# Documentation interne conservée en local uniquement.
 docs/
-/CLAUDE.md
 /README.tr.md
