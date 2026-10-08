@@ -54,7 +54,7 @@ export class AuthService {
   async register(dto: RegisterDto): Promise<AuthUserView> {
     const existing = await this.authRepo.findByEmail(dto.email);
     if (existing) {
-      throw new ConflictException('Bu e-posta zaten kayıtlı');
+      throw new ConflictException('Cet e-mail est déjà enregistré');
     }
     const passwordHash = await bcrypt.hash(dto.password, this.bcryptCost);
     const user = await this.authRepo.createUser({
@@ -74,7 +74,7 @@ export class AuthService {
 
     if (!user || !passwordOk || !user.isActive) {
       // Var/yok ve aktif/pasif ayrımı SIZDIRILMAZ — tek tip mesaj.
-      throw new UnauthorizedException('Geçersiz kimlik bilgileri');
+      throw new UnauthorizedException('Identifiants invalides');
     }
     return this.issueTokens(user);
   }
@@ -87,35 +87,35 @@ export class AuthService {
         { secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET') },
       );
     } catch {
-      throw new UnauthorizedException('Geçersiz oturum');
+      throw new UnauthorizedException('Session invalide');
     }
 
     const stored = await this.authRepo.findRefreshTokenById(payload.jti);
     if (!stored || stored.userId !== payload.sub) {
-      throw new UnauthorizedException('Geçersiz oturum');
+      throw new UnauthorizedException('Session invalide');
     }
 
     // Reuse detection: iptal edilmiş token tekrar kullanıldıysa → çalıntı şüphesi,
     // kullanıcının TÜM oturumlarını iptal et.
     if (stored.revokedAt) {
       await this.authRepo.revokeAllForUser(stored.userId);
-      throw new UnauthorizedException('Oturum güvenliği ihlali tespit edildi');
+      throw new UnauthorizedException('Atteinte à la sécurité de session détectée');
     }
 
     if (stored.expiresAt.getTime() <= Date.now()) {
-      throw new UnauthorizedException('Oturum süresi dolmuş');
+      throw new UnauthorizedException('Session expirée');
     }
 
     // Hash eşleşmesi: ham token DB'de tutulmaz, SHA-256 hash'i karşılaştırılır.
     if (this.hashToken(rawRefreshToken) !== stored.tokenHash) {
       // Aynı jti, farklı token → manipülasyon. Tüm oturumları iptal et.
       await this.authRepo.revokeAllForUser(stored.userId);
-      throw new UnauthorizedException('Geçersiz oturum');
+      throw new UnauthorizedException('Session invalide');
     }
 
     const user = await this.authRepo.findById(stored.userId);
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Geçersiz oturum');
+      throw new UnauthorizedException('Session invalide');
     }
 
     // ROTASYON: eski refresh iptal, yeni access + refresh üret.

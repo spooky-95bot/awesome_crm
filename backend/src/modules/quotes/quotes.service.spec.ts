@@ -23,7 +23,7 @@ const quoteRecord = (over: Record<string, unknown> = {}) => ({
   customerName: 'Acme',
   customerEmail: null,
   status: QuoteStatus.DRAFT,
-  currency: 'TRY',
+  currency: 'EUR',
   subtotal: new D('2000'),
   taxRate: new D('20'),
   taxAmount: new D('400'),

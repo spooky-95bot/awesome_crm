@@ -56,7 +56,7 @@ export class DealsService {
   async create(dto: CreateDealDto, actor: AuthenticatedUser) {
     const stage = await this.repo.getStage(dto.stageId);
     if (!stage) {
-      throw new BadRequestException('Geçersiz stageId.');
+      throw new BadRequestException('stageId invalide.');
     }
     // Pipeline tutarlılığı: stage verilen pipeline'a ait olmalı.
     if (stage.pipelineId !== dto.pipelineId) {
@@ -81,7 +81,7 @@ export class DealsService {
       phone: dto.phone,
       company: dto.company,
       value: dto.value ?? null,
-      currency: dto.currency ?? 'TRY',
+      currency: dto.currency ?? 'EUR',
       customFields: customFields as Prisma.InputJsonValue,
       rank,
       status: DealStatus.OPEN,
@@ -103,7 +103,7 @@ export class DealsService {
   async findBoard(pipelineId: string) {
     const pipeline = await this.repo.getPipeline(pipelineId);
     if (!pipeline) {
-      throw new NotFoundException('Pipeline bulunamadı');
+      throw new NotFoundException('Pipeline introuvable');
     }
     const stages = await this.repo.board(pipelineId);
     return {
@@ -174,7 +174,7 @@ export class DealsService {
 
     const toStage = await this.repo.getStage(dto.toStageId);
     if (!toStage) {
-      throw new BadRequestException('Geçersiz hedef stage.');
+      throw new BadRequestException('Étape cible invalide.');
     }
     // Cross-pipeline taşıma engeli.
     if (toStage.pipelineId !== deal.pipelineId) {
@@ -233,7 +233,7 @@ export class DealsService {
     if (ownerId) {
       const exists = await this.repo.userExists(ownerId);
       if (!exists) {
-        throw new BadRequestException('Atanacak kullanıcı bulunamadı.');
+        throw new BadRequestException('Utilisateur à assigner introuvable.');
       }
     }
     const updated = await this.repo.setOwner(id, ownerId);
@@ -268,7 +268,7 @@ export class DealsService {
   private async getDealOrThrow(id: string) {
     const deal = await this.repo.getDeal(id);
     if (!deal) {
-      throw new NotFoundException('Deal bulunamadı');
+      throw new NotFoundException('Vente introuvable');
     }
     return deal;
   }
@@ -281,7 +281,7 @@ export class DealsService {
     const managesAll = actor.roles.some((r) => MANAGE_ALL_ROLES.includes(r));
     if (managesAll) return;
     if (deal.ownerId && deal.ownerId === actor.id) return;
-    throw new ForbiddenException('Bu deal üzerinde yetkiniz yok.');
+    throw new ForbiddenException("Vous n'avez pas les droits sur cette vente.");
   }
 
   // Komşu kart rank'ini çözer; kart aynı hedef stage'de ve silinmemiş olmalı (IDOR/tutarlılık).

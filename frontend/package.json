@@ -1,8 +1,8 @@
 {
-  "name": "acik-kaynak-crm-frontend",
+  "name": "elysence-partner-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "Açık Kaynak CRM — Next.js frontend (Atomic Design)",
+  "description": "Elysence Partner — interface Next.js",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",

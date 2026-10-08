@@ -35,7 +35,7 @@ export class CompaniesService {
 
   async findOne(id: string) {
     const company = await this.repo.findById(id);
-    if (!company) throw new NotFoundException('Şirket bulunamadı');
+    if (!company) throw new NotFoundException('Société introuvable');
     return this.view(company);
   }
 

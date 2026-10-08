@@ -113,7 +113,7 @@ export class LeadsRepository {
           value: overrides.value
             ? new Prisma.Decimal(overrides.value)
             : undefined,
-          currency: overrides.value ? overrides.currency || 'TRY' : undefined,
+          currency: overrides.value ? overrides.currency || 'EUR' : undefined,
           company: companyName ?? undefined,
           contactName: overrides.contactName?.trim() || fullName,
           email: email ?? undefined,

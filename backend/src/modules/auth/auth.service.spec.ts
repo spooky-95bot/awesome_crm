@@ -124,7 +124,7 @@ describe('AuthService', () => {
     mockCompare.mockResolvedValue(false);
     await expect(
       service.validateAndLogin({ email: 'admin@example.invalid', password: 'wrong' }),
-    ).rejects.toMatchObject({ message: 'Geçersiz kimlik bilgileri' });
+    ).rejects.toMatchObject({ message: 'Identifiants invalides' });
   });
 
   // U-1.3b — enumeration/timing: kullanıcı yoksa da bcrypt.compare çağrılır

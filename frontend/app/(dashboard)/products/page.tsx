@@ -27,7 +27,7 @@ const FIELDS: CrudField[] = [
   { key: 'name', label: 'field.name', required: true },
   { key: 'sku', label: 'field.sku' },
   { key: 'unitPrice', label: 'field.unitPrice', type: 'number', required: true, placeholder: '1000.00' },
-  { key: 'currency', label: 'field.currency', placeholder: 'TRY' },
+  { key: 'currency', label: 'field.currency', placeholder: 'EUR' },
   { key: 'taxRate', label: 'field.taxRate', type: 'number', placeholder: '20' },
   { key: 'description', label: 'field.description', type: 'textarea' },
 ];

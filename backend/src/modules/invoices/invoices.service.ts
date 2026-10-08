@@ -43,7 +43,7 @@ export class InvoicesService {
         dealId: dto.dealId,
         customerName: dto.customerName,
         customerEmail: dto.customerEmail,
-        currency: dto.currency ?? 'TRY',
+        currency: dto.currency ?? 'EUR',
         subtotal: totals.subtotal,
         taxRate: dto.taxRate,
         taxAmount: totals.taxAmount,
@@ -117,10 +117,10 @@ export class InvoicesService {
   async issue(id: string, actor: AuthenticatedUser) {
     const invoice = await this.getOrThrow(id);
     if (invoice.status !== InvoiceStatus.DRAFT) {
-      throw new ConflictException('Yalnız DRAFT fatura issue edilebilir.');
+      throw new ConflictException('Seule une facture au statut DRAFT peut être émise.');
     }
     if (invoice.lineItems.length === 0) {
-      throw new BadRequestException('Kalemsiz fatura issue edilemez.');
+      throw new BadRequestException('Une facture sans ligne ne peut pas être émise.');
     }
     // Sunucu UTC: yıl + vade.
     const year = new Date().getUTCFullYear();
@@ -152,7 +152,7 @@ export class InvoicesService {
     }
     const amount = new D(dto.amount);
     if (amount.lte(0)) {
-      throw new BadRequestException('Ödeme tutarı pozitif olmalı.');
+      throw new BadRequestException('Le montant du paiement doit être positif.');
     }
     const newAmountPaid = invoice.amountPaid.plus(amount);
     // Aşırı ödeme engeli.
@@ -188,7 +188,7 @@ export class InvoicesService {
   async cancel(id: string, actor: AuthenticatedUser) {
     const invoice = await this.getOrThrow(id);
     if (invoice.status === InvoiceStatus.CANCELLED) {
-      throw new ConflictException('Fatura zaten iptal edilmiş.');
+      throw new ConflictException('La facture est déjà annulée.');
     }
     // PAID veya ödeme alınmış fatura iptal edilemez → credit note ile düzeltilir.
     if (invoice.status === InvoiceStatus.PAID || invoice.amountPaid.gt(0)) {
@@ -237,7 +237,7 @@ export class InvoicesService {
     }
     const amt = new D(amount);
     if (amt.lte(0)) {
-      throw new BadRequestException('Ödeme tutarı pozitif olmalı.');
+      throw new BadRequestException('Le montant du paiement doit être positif.');
     }
     const newAmountPaid = invoice.amountPaid.plus(amt);
     if (newAmountPaid.gt(invoice.total)) {
@@ -273,7 +273,7 @@ export class InvoicesService {
   private async getOrThrow(id: string): Promise<InvoiceWithRelations> {
     const invoice = await this.repo.findById(id);
     if (!invoice) {
-      throw new NotFoundException('Fatura bulunamadı');
+      throw new NotFoundException('Facture introuvable');
     }
     return invoice;
   }
@@ -281,7 +281,7 @@ export class InvoicesService {
   private assertTaxRate(taxRate: string): void {
     const t = new D(taxRate);
     if (t.lt(0) || t.gt(100)) {
-      throw new BadRequestException('taxRate 0–100 aralığında olmalı.');
+      throw new BadRequestException('taxRate doit être compris entre 0 et 100.');
     }
   }
 

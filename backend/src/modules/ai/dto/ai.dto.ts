@@ -22,7 +22,7 @@ export class DraftEmailDto {
   @IsIn(EMAIL_TONES)
   tone?: (typeof EMAIL_TONES)[number];
 
-  @ApiPropertyOptional({ description: 'Yanıt dili', default: 'tr' })
+  @ApiPropertyOptional({ description: 'Langue de réponse', default: 'fr' })
   @IsOptional()
   @IsString()
   @MaxLength(20)

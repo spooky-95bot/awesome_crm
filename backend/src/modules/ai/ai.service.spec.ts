@@ -14,7 +14,7 @@ const dealView = {
   title: 'Büyük Anlaşma',
   company: 'Acme',
   value: '50000',
-  currency: 'TRY',
+  currency: 'EUR',
   status: 'OPEN',
   customFields: {},
   activities: [{ type: 'CALL', createdAt: new Date() }],

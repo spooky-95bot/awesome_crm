@@ -87,14 +87,14 @@ export class PipelinesService {
 
   private async getPipelineOrThrow(id: string) {
     const p = await this.repo.findPipelineById(id);
-    if (!p) throw new NotFoundException('Pipeline bulunamadı');
+    if (!p) throw new NotFoundException('Pipeline introuvable');
     return p;
   }
 
   private async getStageOrThrow(pipelineId: string, stageId: string) {
     const s = await this.repo.findStageById(stageId);
     if (!s || s.pipelineId !== pipelineId) {
-      throw new NotFoundException('Stage bulunamadı');
+      throw new NotFoundException('Étape introuvable');
     }
     return s;
   }

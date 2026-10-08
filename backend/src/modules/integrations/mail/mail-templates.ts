@@ -1,5 +1,5 @@
 // src/modules/integrations/mail/mail-templates.ts
-// Basit şablon kayıt defteri: anahtar → konu + gövde üreticisi. DRY + test edilebilir.
+// Registre simple de modèles : clé -> générateur d'objet + corps. DRY et testable.
 type Ctx = Record<string, unknown>;
 
 interface Template {
@@ -12,24 +12,24 @@ const s = (c: Ctx, k: string, d = ''): string =>
 
 export const MAIL_TEMPLATES: Record<string, Template> = {
   welcome: {
-    subject: () => 'Açık Kaynak CRM — Hoş geldiniz',
+    subject: () => 'Elysence Partner — Bienvenue',
     text: (c) =>
-      `Merhaba ${s(c, 'firstName', 'kullanıcı')},\n\nHesabınız oluşturuldu. İyi çalışmalar!`,
+      `Bonjour ${s(c, 'firstName', 'utilisateur')},\n\nVotre compte a été créé. Bon travail !`,
   },
   'deal.won': {
-    subject: (c) => `Anlaşma kazanıldı: ${s(c, 'title')}`,
+    subject: (c) => `Vente conclue : ${s(c, 'title')}`,
     text: (c) =>
-      `Tebrikler! "${s(c, 'title')}" anlaşması kazanıldı (${s(c, 'value', '-')} ${s(c, 'currency', 'TRY')}).`,
+      `Félicitations ! La vente « ${s(c, 'title')} » a été conclue (${s(c, 'value', '-')} ${s(c, 'currency', 'EUR')}).`,
   },
   'lead.assigned': {
-    subject: () => 'Yeni lead atandı',
+    subject: () => 'Nouvelle demande assignée',
     text: (c) =>
-      `Size yeni bir lead atandı: ${s(c, 'firstName')} ${s(c, 'lastName')} (${s(c, 'companyName', '-')}).`,
+      `Une nouvelle demande vous a été assignée : ${s(c, 'firstName')} ${s(c, 'lastName')} (${s(c, 'companyName', '-')}).`,
   },
   'invoice.issued': {
-    subject: (c) => `Faturanız hazır: ${s(c, 'number')}`,
+    subject: (c) => `Votre facture est prête : ${s(c, 'number')}`,
     text: (c) =>
-      `${s(c, 'customerName')} için ${s(c, 'number')} numaralı fatura düzenlendi. Tutar: ${s(c, 'total', '-')} ${s(c, 'currency', 'TRY')}.`,
+      `La facture ${s(c, 'number')} a été émise pour ${s(c, 'customerName')}. Montant : ${s(c, 'total', '-')} ${s(c, 'currency', 'EUR')}.`,
   },
 };
 
@@ -39,7 +39,7 @@ export function renderTemplate(
 ): { subject: string; text: string } {
   const tpl = MAIL_TEMPLATES[templateKey];
   if (!tpl) {
-    throw new Error(`Bilinmeyen mail şablonu: ${templateKey}`);
+    throw new Error(`Modèle d'e-mail inconnu : ${templateKey}`);
   }
   return { subject: tpl.subject(context), text: tpl.text(context) };
 }

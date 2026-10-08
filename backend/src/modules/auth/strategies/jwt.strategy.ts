@@ -31,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: AccessTokenPayload): Promise<AuthenticatedUser> {
     const user = await this.authRepo.findById(payload.sub);
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Kimlik doğrulama gerekli');
+      throw new UnauthorizedException('Authentification requise');
     }
     // İzinler her istekte güncel kaynaktan (DB) toplanır; tekilleştirilir.
     const permissions = new Set<string>();

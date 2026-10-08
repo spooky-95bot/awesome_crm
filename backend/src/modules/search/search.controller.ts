@@ -17,7 +17,7 @@ export class SearchController {
   @Get()
   search(@Query('q') q: string, @CurrentUser() actor: AuthenticatedUser) {
     if (!q || q.trim().length < 2) {
-      throw new BadRequestException('Arama terimi en az 2 karakter olmalı.');
+      throw new BadRequestException('Le terme de recherche doit comporter au moins 2 caractères.');
     }
     return this.service.search(q, actor);
   }

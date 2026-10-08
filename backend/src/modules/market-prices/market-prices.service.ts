@@ -63,7 +63,7 @@ export class MarketPricesService {
 
   async remove(id: string) {
     const p = await this.repo.findById(id);
-    if (!p) throw new NotFoundException('Ürün bulunamadı');
+    if (!p) throw new NotFoundException('Produit introuvable');
     await this.repo.delete(id);
     return { deleted: true };
   }
@@ -98,7 +98,7 @@ export class MarketPricesService {
       rows.push({
         name: name.slice(0, 200),
         price,
-        currency: (iCur >= 0 ? cols[iCur] : 'TRY')?.toUpperCase() || 'TRY',
+        currency: (iCur >= 0 ? cols[iCur] : 'EUR')?.toUpperCase() || 'EUR',
         url: iUrl >= 0 ? cols[iUrl] || undefined : undefined,
       });
     }

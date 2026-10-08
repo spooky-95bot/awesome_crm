@@ -217,7 +217,7 @@ export async function testConnection(
       // BIN sorgusu ile kimlik doğrulama ping'i (imza geçerliyse status:success döner).
       const uriPath = '/payment/bin/check';
       const body = JSON.stringify({
-        locale: 'tr',
+        locale: 'fr',
         conversationId: 'conn-test',
         binNumber: '552879',
       });

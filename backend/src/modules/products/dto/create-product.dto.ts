@@ -33,7 +33,7 @@ export class CreateProductDto {
   @IsNumberString()
   unitPrice: string;
 
-  @ApiPropertyOptional({ default: 'TRY' })
+  @ApiPropertyOptional({ default: 'EUR' })
   @IsOptional()
   @IsString()
   @MaxLength(3)

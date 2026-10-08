@@ -1,7 +1,7 @@
 {
-  "name": "acik-kaynak-crm-backend",
+  "name": "elysence-partner-backend",
   "version": "0.1.0",
-  "description": "Açık Kaynak CRM — NestJS API (API-First, RBAC, JWT)",
+  "description": "Elysence Partner — API NestJS",
   "license": "MIT",
   "scripts": {
     "build": "nest build",

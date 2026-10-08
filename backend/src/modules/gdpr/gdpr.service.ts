@@ -17,7 +17,7 @@ export class GdprService {
       where: { id },
       include: { company: { select: { id: true, name: true } } },
     });
-    if (!contact) throw new NotFoundException('Kişi bulunamadı');
+    if (!contact) throw new NotFoundException('Contact introuvable');
     const deals = await this.prisma.deal.findMany({
       where: { contactId: id },
       select: { id: true, title: true, status: true, createdAt: true },
@@ -32,7 +32,7 @@ export class GdprService {
   // Kişiyi siler; bağlı deal'lerin kişi bağı kaldırılır (iz korunur).
   async eraseContact(id: string, actor: AuthenticatedUser) {
     const contact = await this.prisma.contact.findUnique({ where: { id } });
-    if (!contact) throw new NotFoundException('Kişi bulunamadı');
+    if (!contact) throw new NotFoundException('Contact introuvable');
     const result = await this.prisma.$transaction(async (tx) => {
       const unlinked = await tx.deal.updateMany({
         where: { contactId: id },

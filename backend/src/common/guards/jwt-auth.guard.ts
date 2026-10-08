@@ -29,7 +29,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest<TUser = unknown>(err: unknown, user: TUser): TUser {
     // Hata türünden bağımsız tek tip yanıt — bilgi sızıntısı engeli.
     if (err || !user) {
-      throw new UnauthorizedException('Kimlik doğrulama gerekli');
+      throw new UnauthorizedException('Authentification requise');
     }
     return user;
   }

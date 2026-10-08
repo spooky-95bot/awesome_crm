@@ -93,14 +93,14 @@ export class LeadFormsService {
 
   async findOne(id: string) {
     const form = await this.repo.findById(id);
-    if (!form) throw new NotFoundException('Form bulunamadı');
+    if (!form) throw new NotFoundException('Formulaire introuvable');
     return this.toAdmin(form, false);
   }
 
   // Secret yalnız MANAGE yetkisiyle açıkça istenince döner.
   async revealSecret(id: string) {
     const form = await this.repo.findById(id);
-    if (!form) throw new NotFoundException('Form bulunamadı');
+    if (!form) throw new NotFoundException('Formulaire introuvable');
     return { id: form.id, publicKey: form.publicKey, secret: form.secret };
   }
 
@@ -137,8 +137,8 @@ export class LeadFormsService {
 
   async getPublicConfig(publicKey: string) {
     const form = await this.repo.findByPublicKey(publicKey);
-    if (!form) throw new NotFoundException('Form bulunamadı');
-    if (!form.isActive) throw new GoneException('Form pasif');
+    if (!form) throw new NotFoundException('Formulaire introuvable');
+    if (!form.isActive) throw new GoneException('Formulaire inactif');
     return {
       name: form.name,
       fields: form.fields,
@@ -152,8 +152,8 @@ export class LeadFormsService {
 
   async submit(publicKey: string, payload: IntakePayloadDto) {
     const form = await this.repo.findByPublicKey(publicKey);
-    if (!form) throw new NotFoundException('Form bulunamadı');
-    if (!form.isActive) throw new GoneException('Form pasif');
+    if (!form) throw new NotFoundException('Formulaire introuvable');
+    if (!form.isActive) throw new GoneException('Formulaire inactif');
 
     // Sunucu-taraflı alan doğrulaması (istemci kontrolü atlanabilir → secure by default).
     this.validateSubmission(form.fields as unknown as FormField[], payload);
@@ -176,12 +176,12 @@ export class LeadFormsService {
     signature?: string;
   }) {
     const form = await this.repo.findByPublicKey(params.publicKey);
-    if (!form) throw new NotFoundException('Form bulunamadı');
+    if (!form) throw new NotFoundException('Formulaire introuvable');
 
     // KURAL: imza doğrulanmadan parse/DB yok.
     const ts = Number(params.timestamp);
     if (!params.signature || !params.timestamp || Number.isNaN(ts)) {
-      throw new UnauthorizedException('İmza/timestamp başlığı eksik');
+      throw new UnauthorizedException('En-tête signature/timestamp manquant');
     }
     const ok = verifySignature({
       secret: form.secret,
@@ -190,13 +190,13 @@ export class LeadFormsService {
       signature: params.signature,
       nowSec: Math.floor(Date.now() / 1000),
     });
-    if (!ok) throw new UnauthorizedException('Geçersiz imza');
+    if (!ok) throw new UnauthorizedException('Signature invalide');
 
     let payload: IntakePayloadDto;
     try {
       payload = JSON.parse(params.rawBody) as IntakePayloadDto;
     } catch {
-      throw new ForbiddenException('Gövde JSON değil');
+      throw new ForbiddenException("Le corps n'est pas du JSON");
     }
     const lead = await this.ingest(payload, LeadChannel.WEBHOOK, form);
     return { success: true, leadId: lead.id };

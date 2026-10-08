@@ -55,7 +55,7 @@ export class WhatsAppService {
     }
     const to = this.digits(input.to);
     if (!to || input.body.trim().length === 0) {
-      throw new BadRequestException('Geçerli telefon ve mesaj gerekli.');
+      throw new BadRequestException('Un téléphone et un message valides sont requis.');
     }
 
     let status = 'sent';
@@ -160,7 +160,7 @@ export class WhatsAppService {
       token !== expected ||
       !challenge
     ) {
-      throw new UnauthorizedException('Doğrulama başarısız.');
+      throw new UnauthorizedException('Validation échouée.');
     }
     return challenge;
   }
@@ -171,10 +171,10 @@ export class WhatsAppService {
     const appSecret = creds?.secrets.appSecret;
     if (!creds || !appSecret) {
       // Bağlantı/appSecret yoksa inbound kabul edilmez (secure by default).
-      throw new UnauthorizedException('WhatsApp inbound yapılandırılmadı.');
+      throw new UnauthorizedException('Réception WhatsApp non configurée.');
     }
     if (!this.verifySignature(appSecret, rawBody, signature)) {
-      throw new UnauthorizedException('Geçersiz imza.');
+      throw new UnauthorizedException('Signature invalide.');
     }
 
     let payload: {
@@ -185,7 +185,7 @@ export class WhatsAppService {
     try {
       payload = JSON.parse(rawBody) as typeof payload;
     } catch {
-      throw new BadRequestException('Gövde JSON değil.');
+      throw new BadRequestException("Le corps n'est pas du JSON.");
     }
 
     let stored = 0;

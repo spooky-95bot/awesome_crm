@@ -52,7 +52,7 @@ export class CreateInvoiceDto {
   @Matches(/^\d{1,3}(\.\d{1,2})?$/, { message: 'taxRate 0–100 arası olmalı.' })
   taxRate: string;
 
-  @ApiPropertyOptional({ example: 'TRY' })
+  @ApiPropertyOptional({ example: 'EUR' })
   @IsOptional()
   @IsString()
   currency?: string;

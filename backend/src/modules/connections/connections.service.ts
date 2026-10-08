@@ -42,12 +42,12 @@ export class ConnectionsService {
   async connect(dto: CreateConnectionDto) {
     this.ensureCrypto();
     const provider = findProvider(dto.provider);
-    if (!provider) throw new BadRequestException('Bilinmeyen sağlayıcı.');
+    if (!provider) throw new BadRequestException('Fournisseur inconnu.');
     if (!provider.available) {
-      throw new BadRequestException('Bu sağlayıcı henüz kullanılamıyor.');
+      throw new BadRequestException("Ce fournisseur n'est pas encore disponible.");
     }
     if (await this.repo.findByProvider(dto.provider)) {
-      throw new ConflictException('Bu sağlayıcı zaten bağlı.');
+      throw new ConflictException('Ce fournisseur est déjà connecté.');
     }
 
     const secrets = dto.secrets ?? {};
@@ -140,7 +140,7 @@ export class ConnectionsService {
 
   private async getOrThrow(id: string): Promise<ConnRow> {
     const row = (await this.repo.findById(id)) as ConnRow | null;
-    if (!row) throw new NotFoundException('Bağlantı bulunamadı.');
+    if (!row) throw new NotFoundException('Connexion introuvable.');
     return row;
   }
 

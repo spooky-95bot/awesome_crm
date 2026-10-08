@@ -34,7 +34,7 @@ const invoiceRecord = (over: Record<string, unknown> = {}) => ({
   customerName: 'ACME',
   customerEmail: null as string | null,
   status: InvoiceStatus.DRAFT,
-  currency: 'TRY',
+  currency: 'EUR',
   subtotal: new D('3000'),
   taxRate: new D('20'),
   taxAmount: new D('600'),

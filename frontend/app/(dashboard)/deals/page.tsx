@@ -19,7 +19,7 @@ const EMPTY = {
   title: '',
   company: '',
   value: '',
-  currency: 'TRY',
+  currency: 'EUR',
   contactName: '',
   email: '',
   phone: '',
@@ -79,7 +79,7 @@ export default function DealsPage() {
       if (form.phone.trim()) payload.phone = form.phone.trim();
       if (form.value.trim()) {
         payload.value = form.value.trim();
-        payload.currency = form.currency || 'TRY';
+        payload.currency = form.currency || 'EUR';
       }
       await api.post('/deals', payload);
     },
@@ -129,7 +129,7 @@ export default function DealsPage() {
               <FormField
                 id="deal-currency"
                 label={t('field.currency')}
-                placeholder="TRY"
+                placeholder="EUR"
                 maxLength={3}
                 value={form.currency}
                 onChange={(e) => set('currency', e.target.value.toUpperCase())}

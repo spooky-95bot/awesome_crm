@@ -55,7 +55,7 @@ export class CreateQuoteDto {
   @MaxLength(200)
   customerEmail?: string;
 
-  @ApiPropertyOptional({ default: 'TRY' })
+  @ApiPropertyOptional({ default: 'EUR' })
   @IsOptional()
   @IsString()
   @MaxLength(3)

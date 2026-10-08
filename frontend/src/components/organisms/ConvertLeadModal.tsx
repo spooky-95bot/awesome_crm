@@ -38,7 +38,7 @@ export function ConvertLeadModal({
     title: fullName,
     company: lead.companyName ?? '',
     value: '',
-    currency: 'TRY',
+    currency: 'EUR',
     contactName: fullName,
     email: lead.email ?? '',
     phone: lead.phone ?? '',
@@ -68,7 +68,7 @@ export function ConvertLeadModal({
       if (form.phone.trim()) payload.phone = form.phone.trim();
       if (form.value.trim()) {
         payload.value = form.value.trim();
-        payload.currency = form.currency || 'TRY';
+        payload.currency = form.currency || 'EUR';
       }
       if (form.stageId) payload.stageId = form.stageId;
       await api.post(`/leads/${lead.id}/convert`, payload);

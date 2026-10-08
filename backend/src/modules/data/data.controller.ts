@@ -37,7 +37,7 @@ export class DataController {
     @Res() res: Response,
   ): Promise<void> {
     if (!EXPORTABLE.includes(entity as ExportEntity)) {
-      throw new BadRequestException('Geçersiz tür.');
+      throw new BadRequestException('Type invalide.');
     }
     const csv = await this.service.exportCsv(entity as ExportEntity);
     res
@@ -60,7 +60,7 @@ export class DataController {
     if (entity === 'companies') {
       return this.service.importCompanies(dto.csv, actor);
     }
-    throw new BadRequestException('Geçersiz içe aktarma türü.');
+    throw new BadRequestException("Type d'import invalide.");
   }
 
   @Get('duplicates/:entity')
@@ -68,7 +68,7 @@ export class DataController {
   @ApiOperation({ summary: 'Yinelenen kayıtları listele (contacts|companies)' })
   duplicates(@Param('entity') entity: string) {
     if (!MERGEABLE.includes(entity as MergeEntity)) {
-      throw new BadRequestException('Geçersiz tür.');
+      throw new BadRequestException('Type invalide.');
     }
     return this.service.duplicates(entity as MergeEntity);
   }
@@ -82,7 +82,7 @@ export class DataController {
     @CurrentUser() actor: AuthenticatedUser,
   ) {
     if (!MERGEABLE.includes(entity as MergeEntity)) {
-      throw new BadRequestException('Geçersiz tür.');
+      throw new BadRequestException('Type invalide.');
     }
     return this.service.merge(entity as MergeEntity, dto, actor);
   }

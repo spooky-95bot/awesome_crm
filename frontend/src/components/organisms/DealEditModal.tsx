@@ -27,7 +27,7 @@ export function DealEditModal({
     title: deal.title ?? '',
     company: deal.company ?? '',
     value: deal.value ?? '',
-    currency: deal.currency ?? 'TRY',
+    currency: deal.currency ?? 'EUR',
     contactName: deal.contactName ?? '',
     email: deal.email ?? '',
     phone: deal.phone ?? '',
@@ -52,7 +52,7 @@ export function DealEditModal({
       if (form.phone.trim()) payload.phone = form.phone.trim();
       if (form.value.trim()) {
         payload.value = form.value.trim();
-        payload.currency = form.currency || 'TRY';
+        payload.currency = form.currency || 'EUR';
       }
       await api.patch(`/deals/${deal.id}`, payload);
       // 2) Aşama değiştiyse taşı (ayrı uç).

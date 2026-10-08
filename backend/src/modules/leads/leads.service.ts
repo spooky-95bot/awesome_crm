@@ -120,14 +120,14 @@ export class LeadsService {
 
   async findOne(id: string) {
     const lead = await this.repo.findById(id);
-    if (!lead) throw new NotFoundException('Lead bulunamadı');
+    if (!lead) throw new NotFoundException('Demande introuvable');
     return lead;
   }
 
   async update(id: string, dto: UpdateLeadDto) {
     const lead = await this.findOne(id);
     if (lead.status === LeadStatus.CONVERTED) {
-      throw new ConflictException('Dönüştürülmüş lead düzenlenemez.');
+      throw new ConflictException('Une demande convertie ne peut pas être modifiée.');
     }
     // CONVERTED yalnız convert akışıyla atanır.
     if (dto.status === LeadStatus.CONVERTED) {
@@ -151,10 +151,10 @@ export class LeadsService {
   ) {
     const result = await this.repo.convert(id, actor.id, dto);
     if ('notFound' in result) {
-      throw new NotFoundException('Lead bulunamadı');
+      throw new NotFoundException('Demande introuvable');
     }
     if ('alreadyConverted' in result) {
-      throw new ConflictException('Lead zaten dönüştürülmüş.');
+      throw new ConflictException('La demande a déjà été convertie.');
     }
     if ('noPipeline' in result) {
       throw new BadRequestException(

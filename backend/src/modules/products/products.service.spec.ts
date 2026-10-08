@@ -22,7 +22,7 @@ const productRecord = (over: Record<string, unknown> = {}) => ({
   name: 'Lisans',
   description: null,
   unitPrice: new Prisma.Decimal('1000.00'),
-  currency: 'TRY',
+  currency: 'EUR',
   taxRate: new Prisma.Decimal('20'),
   active: true,
   tenantId: null,

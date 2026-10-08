@@ -27,7 +27,7 @@ export class ConvertLeadDto {
   @Matches(/^\d{1,12}(\.\d{1,2})?$/, { message: 'value geçerli tutar olmalı' })
   value?: string;
 
-  @ApiPropertyOptional({ example: 'TRY' })
+  @ApiPropertyOptional({ example: 'EUR' })
   @IsOptional()
   @IsString()
   @MaxLength(3)

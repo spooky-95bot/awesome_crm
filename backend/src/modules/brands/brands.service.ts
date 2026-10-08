@@ -62,7 +62,7 @@ export class BrandsService {
 
   async findOne(id: string) {
     const brand = await this.repo.findById(id);
-    if (!brand) throw new NotFoundException('Marka bulunamadı');
+    if (!brand) throw new NotFoundException('Marque introuvable');
     return brand;
   }
 

@@ -48,13 +48,13 @@ export class OAuthService {
   // Adım 1 — yetkilendirme URL'i (panel window.location ile gider).
   async start(connectionId: string) {
     const row = await this.repo.findById(connectionId);
-    if (!row) throw new NotFoundException('Bağlantı bulunamadı.');
+    if (!row) throw new NotFoundException('Connexion introuvable.');
     const def = OAUTH_PROVIDERS[row.provider];
-    if (!def) throw new BadRequestException('OAuth destekli sağlayıcı değil.');
+    if (!def) throw new BadRequestException('Fournisseur sans support OAuth.');
 
     const cfg = (row.config ?? {}) as Record<string, unknown>;
     const clientId = String(cfg.clientId ?? '');
-    if (!clientId) throw new BadRequestException('clientId eksik.');
+    if (!clientId) throw new BadRequestException('clientId manquant.');
 
     const state = randomBytes(24).toString('base64url');
     await this.repo.update(connectionId, {

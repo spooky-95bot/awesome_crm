@@ -83,7 +83,7 @@ export class PaymentsService {
     }
     const remaining = inv.remaining;
     if (remaining.lte(0)) {
-      throw new BadRequestException('Fatura zaten tam ödenmiş.');
+      throw new BadRequestException('La facture est déjà entièrement payée.');
     }
 
     const price = remaining.toFixed(2);
@@ -98,12 +98,12 @@ export class PaymentsService {
       .split(/\s+/);
     const lastName = rest.join(' ') || firstName;
     const email = dto.buyerEmail ?? inv.customerEmail ?? 'noemail@ornek.com';
-    const city = dto.city ?? 'Istanbul';
-    const country = dto.country ?? 'Turkey';
+    const city = dto.city ?? 'Paris';
+    const country = dto.country ?? 'France';
     const address = dto.address ?? inv.customerName ?? 'N/A';
 
     const bodyObj = {
-      locale: 'tr',
+      locale: 'fr',
       conversationId,
       price,
       paidPrice: price,
@@ -163,7 +163,7 @@ export class PaymentsService {
     try {
       parsed = JSON.parse(res.body) as IyzicoInitResponse;
     } catch {
-      throw new BadRequestException('iyzico yanıtı çözümlenemedi.');
+      throw new BadRequestException('Réponse iyzico illisible.');
     }
     if (parsed.status !== 'success' || !parsed.token) {
       throw new BadRequestException(
@@ -205,7 +205,7 @@ export class PaymentsService {
     if (!creds) return { invoiceId: intent.invoiceId, status: 'failed' };
 
     const body = JSON.stringify({
-      locale: 'tr',
+      locale: 'fr',
       conversationId: intent.conversationId,
       token,
     });

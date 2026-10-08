@@ -92,7 +92,7 @@ export class DataService {
         );
       }
       default:
-        throw new BadRequestException('Geçersiz dışa aktarma türü.');
+        throw new BadRequestException("Type d'export invalide.");
     }
   }
 
@@ -180,14 +180,14 @@ export class DataService {
 
   async merge(entity: MergeEntity, dto: MergeDto, actor: AuthenticatedUser) {
     if (dto.targetId === dto.sourceId) {
-      throw new BadRequestException('Hedef ve kaynak aynı olamaz.');
+      throw new BadRequestException('La cible et la source ne peuvent pas être identiques.');
     }
     if (entity === 'contacts') {
       const [t, s] = await Promise.all([
         this.repo.getContact(dto.targetId),
         this.repo.getContact(dto.sourceId),
       ]);
-      if (!t || !s) throw new NotFoundException('Kişi bulunamadı.');
+      if (!t || !s) throw new NotFoundException('Contact introuvable.');
       const r = await this.repo.mergeContacts(dto.targetId, dto.sourceId);
       this.logger.log(
         `data.merge contacts by=${actor.id} ${dto.sourceId}->${dto.targetId} deals=${r.movedDeals}`,
@@ -198,7 +198,7 @@ export class DataService {
       this.repo.getCompany(dto.targetId),
       this.repo.getCompany(dto.sourceId),
     ]);
-    if (!t || !s) throw new NotFoundException('Şirket bulunamadı.');
+    if (!t || !s) throw new NotFoundException('Société introuvable.');
     const r = await this.repo.mergeCompanies(dto.targetId, dto.sourceId);
     this.logger.log(
       `data.merge companies by=${actor.id} ${dto.sourceId}->${dto.targetId}`,

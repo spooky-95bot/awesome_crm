@@ -42,7 +42,7 @@ export class RolesService {
   ): Promise<RoleView> {
     const existing = await this.rolesRepo.findByName(dto.name);
     if (existing) {
-      throw new ConflictException('Bu rol adı zaten var.');
+      throw new ConflictException('Ce nom de rôle existe déjà.');
     }
     const role = await this.rolesRepo.create(
       dto.name,
@@ -61,7 +61,7 @@ export class RolesService {
   async findOne(id: string): Promise<RoleView> {
     const role = await this.rolesRepo.findById(id);
     if (!role) {
-      throw new NotFoundException('Rol bulunamadı');
+      throw new NotFoundException('Rôle introuvable');
     }
     return this.toView(role as RoleRow);
   }
@@ -97,7 +97,7 @@ export class RolesService {
   ): Promise<{ deleted: true }> {
     const role = await this.findOne(id);
     if (role.name === ROLE_NAMES.ADMIN) {
-      throw new ConflictException('ADMIN rolü silinemez.');
+      throw new ConflictException('Le rôle ADMIN ne peut pas être supprimé.');
     }
     await this.rolesRepo.delete(id);
     this.logger.log(`role.delete by=${actor.id} role=${id}(${role.name})`);

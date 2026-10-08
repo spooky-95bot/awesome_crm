@@ -70,7 +70,7 @@ export class UsersService {
 
     const existing = await this.usersRepo.findByEmail(dto.email);
     if (existing) {
-      throw new ConflictException('Bu e-posta zaten kayıtlı');
+      throw new ConflictException('Cet e-mail est déjà enregistré');
     }
     await this.assertRolesExist(roleIds);
 
@@ -102,7 +102,7 @@ export class UsersService {
   async findOne(id: string): Promise<UserView> {
     const user = await this.usersRepo.findById(id);
     if (!user) {
-      throw new NotFoundException('Kullanıcı bulunamadı');
+      throw new NotFoundException('Utilisateur introuvable');
     }
     return this.toView(user as UserRow);
   }
@@ -163,7 +163,7 @@ export class UsersService {
     if (roleIds.length === 0) return;
     const found = await this.usersRepo.countRolesByIds(roleIds);
     if (found !== new Set(roleIds).size) {
-      throw new BadRequestException('Geçersiz rol id(ler)i.');
+      throw new BadRequestException('Identifiant(s) de rôle invalide(s).');
     }
   }
 

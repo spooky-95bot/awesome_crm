@@ -28,13 +28,17 @@ export class PermissionsGuard implements CanActivate {
     const user = ctx.switchToHttp().getRequest().user as
       AuthenticatedUser | undefined;
     if (!user) {
-      throw new ForbiddenException('Bu işlem için yetkiniz yok.');
+      throw new ForbiddenException(
+        "Vous n'avez pas la permission pour cette action.",
+      );
     }
 
     const granted = new Set(user.permissions ?? []);
     const ok = required.every((p) => granted.has(p));
     if (!ok) {
-      throw new ForbiddenException('Bu işlem için yetkiniz yok.');
+      throw new ForbiddenException(
+        "Vous n'avez pas la permission pour cette action.",
+      );
     }
     return true;
   }

@@ -79,7 +79,7 @@ export class TrendsService {
     try {
       parsed = JSON.parse(res.body) as typeof parsed;
     } catch {
-      throw new BadRequestException('SerpAPI yanıtı çözümlenemedi.');
+      throw new BadRequestException('Réponse SerpAPI illisible.');
     }
 
     const timeline = (parsed.interest_over_time?.timeline_data ?? []).map(

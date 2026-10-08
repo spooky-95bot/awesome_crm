@@ -1,23 +1,14 @@
 cff-version: 1.2.0
-message: "If you use awesome_crm, please cite this repository."
-title: "awesome_crm"
-abstract: "An enterprise-grade, self-hosted open-source CRM built with NestJS and Next.js: leads and web-to-lead forms, sales pipeline with a Kanban board, contacts, quotes (CPQ) and invoicing, chart-rich reports, signed webhooks, RBAC and multi-tenancy."
+message: "Si vous utilisez Elysence Partner, merci de citer ce dépôt."
+title: "Elysence Partner"
+abstract: "Espace de gestion pour salon de soins : demandes, clientes, rendez-vous, prestations, ventes et factures."
 type: software
 authors:
-  - name: "meliksahk"
-repository-code: "https://github.com/meliksahk/awesome_crm"
-url: "https://meliksahk.github.io/awesome_crm/"
+  - name: "Maison ELYSENCE"
+repository-code: "https://github.com/spooky-95bot/awesome_crm"
 license: MIT
 keywords:
   - crm
-  - open-source
-  - self-hosted
-  - nestjs
-  - nextjs
-  - typescript
-  - prisma
-  - postgresql
-  - rbac
-  - multi-tenant
-  - kanban
-  - sales
+  - gestion
+  - salon
+  - bien-etre

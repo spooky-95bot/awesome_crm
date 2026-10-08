@@ -26,7 +26,7 @@ export class CustomFieldsService {
     const exists = await this.prisma.customFieldDef.findUnique({
       where: { entity_key: { entity: dto.entity, key: dto.key } },
     });
-    if (exists) throw new ConflictException('Bu entity için key zaten var.');
+    if (exists) throw new ConflictException('Une clé existe déjà pour cette entité.');
     return this.prisma.customFieldDef.create({
       data: {
         entity: dto.entity,
@@ -59,7 +59,7 @@ export class CustomFieldsService {
 
   private async getOrThrow(id: string) {
     const def = await this.prisma.customFieldDef.findUnique({ where: { id } });
-    if (!def) throw new NotFoundException('Özel alan tanımı bulunamadı');
+    if (!def) throw new NotFoundException('Définition de champ personnalisé introuvable');
     return def;
   }
 

@@ -6,7 +6,7 @@ describe('renderTemplate', () => {
     const r = renderTemplate('deal.won', {
       title: 'ACME',
       value: '1000',
-      currency: 'TRY',
+      currency: 'EUR',
     });
     expect(r.subject).toContain('ACME');
     expect(r.text).toContain('1000');

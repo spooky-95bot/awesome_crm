@@ -87,7 +87,7 @@ export class AiService {
   // Verilen bağlama göre takip e-postası taslağı üretir.
   async draftEmail(dto: DraftEmailDto): Promise<EmailDraft> {
     const tone = dto.tone ?? 'professional';
-    const language = dto.language ?? 'tr';
+    const language = dto.language ?? 'fr';
     return this.completeJson<EmailDraft>(
       `Sen bir satış temsilcisisin. Net, kısa ve ${tone} tonda bir e-posta ` +
         `taslağı yaz. Dil: ${language}. Yer tutucuları [köşeli parantez] ile belirt.`,
@@ -178,7 +178,7 @@ export class AiService {
       this.logger.error(
         `AI çağrısı başarısız: ${err instanceof Error ? err.message : String(err)}`,
       );
-      throw new ServiceUnavailableException('AI servisi şu an kullanılamıyor.');
+      throw new ServiceUnavailableException('Le service IA est actuellement indisponible.');
     }
   }
 }

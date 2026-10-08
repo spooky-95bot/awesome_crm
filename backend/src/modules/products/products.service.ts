@@ -28,14 +28,14 @@ export class ProductsService {
     this.assertMoney(dto.unitPrice, dto.taxRate);
     if (dto.sku) {
       const exists = await this.repo.findBySku(dto.sku);
-      if (exists) throw new ConflictException('Bu SKU zaten kayıtlı.');
+      if (exists) throw new ConflictException('Ce SKU est déjà enregistré.');
     }
     const created = await this.repo.create({
       sku: dto.sku,
       name: dto.name,
       description: dto.description,
       unitPrice: dto.unitPrice,
-      currency: dto.currency ?? 'TRY',
+      currency: dto.currency ?? 'EUR',
       taxRate: dto.taxRate ?? '0',
       active: dto.active ?? true,
     });
@@ -71,7 +71,7 @@ export class ProductsService {
     if (dto.sku) {
       const exists = await this.repo.findBySku(dto.sku);
       if (exists && exists.id !== id) {
-        throw new ConflictException('Bu SKU başka bir üründe kayıtlı.');
+        throw new ConflictException('Ce SKU est déjà utilisé par un autre produit.');
       }
     }
     const updated = await this.repo.update(id, {
@@ -98,18 +98,18 @@ export class ProductsService {
 
   private async getOrThrow(id: string): Promise<ProductRecord> {
     const p = await this.repo.findById(id);
-    if (!p) throw new NotFoundException('Ürün bulunamadı');
+    if (!p) throw new NotFoundException('Produit introuvable');
     return p;
   }
 
   private assertMoney(unitPrice?: string, taxRate?: string): void {
     if (unitPrice !== undefined && new D(unitPrice).lt(0)) {
-      throw new BadRequestException('Birim fiyat negatif olamaz.');
+      throw new BadRequestException('Le prix unitaire ne peut pas être négatif.');
     }
     if (taxRate !== undefined) {
       const t = new D(taxRate);
       if (t.lt(0) || t.gt(100)) {
-        throw new BadRequestException('taxRate 0–100 aralığında olmalı.');
+        throw new BadRequestException('taxRate doit être compris entre 0 et 100.');
       }
     }
   }

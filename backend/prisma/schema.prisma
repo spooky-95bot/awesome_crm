@@ -125,7 +125,7 @@ model Deal {
   phone        String?
   company      String?
   value        Decimal?       @db.Decimal(14, 2) // tahmini değer
-  currency     String         @default("TRY")
+  currency     String         @default("EUR")
   // Kanban içi sıralama — kesirli rank (çakışmasız taşıma için)
   rank         Decimal        @db.Decimal(30, 15)
   ownerId      String? // atanan satış temsilcisi
@@ -201,7 +201,7 @@ model Invoice {
   customerName  String
   customerEmail String?
   status        InvoiceStatus     @default(DRAFT)
-  currency      String            @default("TRY")
+  currency      String            @default("EUR")
   subtotal      Decimal           @db.Decimal(14, 2)
   taxRate       Decimal           @db.Decimal(5, 2) // % KDV
   taxAmount     Decimal           @db.Decimal(14, 2)
@@ -270,7 +270,7 @@ model PaymentIntent {
   token          String   @unique // iyzico checkout form token'ı
   conversationId String   @unique // bizim ürettiğimiz benzersiz id (iyzico'ya echo edilir)
   amount         Decimal  @db.Decimal(14, 2) // beklenen ödeme tutarı (kalan bakiye)
-  currency       String   @default("TRY")
+  currency       String   @default("EUR")
   status         String   @default("pending") // pending | paid | failed
   providerRef    String? // iyzico paymentId
   createdById    String // niyeti başlatan kullanıcı → Payment.recordedById
@@ -290,7 +290,7 @@ model Product {
   name        String
   description String?
   unitPrice   Decimal         @db.Decimal(14, 2)
-  currency    String          @default("TRY")
+  currency    String          @default("EUR")
   taxRate     Decimal         @default(0) @db.Decimal(5, 2) // % varsayılan KDV
   active      Boolean         @default(true)
   tenantId    String?
@@ -321,7 +321,7 @@ model Quote {
   customerName       String
   customerEmail      String?
   status             QuoteStatus     @default(DRAFT)
-  currency           String          @default("TRY")
+  currency           String          @default("EUR")
   subtotal           Decimal         @db.Decimal(14, 2)
   taxRate            Decimal         @db.Decimal(5, 2)
   taxAmount          Decimal         @db.Decimal(14, 2)
@@ -748,7 +748,7 @@ model CompetitorProduct {
   brandId   String
   name      String
   url       String?
-  currency  String       @default("TRY")
+  currency  String       @default("EUR")
   price     Decimal      @db.Decimal(14, 2)
   source    String       @default("csv") // csv | manual
   createdAt DateTime     @default(now())

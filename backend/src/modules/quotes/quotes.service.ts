@@ -50,7 +50,7 @@ export class QuotesService {
         dealId: dto.dealId,
         customerName: dto.customerName,
         customerEmail: dto.customerEmail,
-        currency: dto.currency ?? 'TRY',
+        currency: dto.currency ?? 'EUR',
         subtotal: totals.subtotal,
         taxRate: dto.taxRate,
         taxAmount: totals.taxAmount,
@@ -87,7 +87,7 @@ export class QuotesService {
   async update(id: string, dto: UpdateQuoteDto, actor: AuthenticatedUser) {
     const quote = await this.getOrThrow(id);
     if (quote.status !== QuoteStatus.DRAFT) {
-      throw new ConflictException('Yalnız DRAFT teklif düzenlenebilir.');
+      throw new ConflictException('Seul un devis au statut DRAFT peut être modifié.');
     }
     const taxRate = dto.taxRate ?? quote.taxRate.toString();
     this.assertTaxRate(taxRate);
@@ -126,10 +126,10 @@ export class QuotesService {
   async send(id: string, actor: AuthenticatedUser) {
     const quote = await this.getOrThrow(id);
     if (quote.status !== QuoteStatus.DRAFT) {
-      throw new ConflictException('Yalnız DRAFT teklif gönderilebilir.');
+      throw new ConflictException('Seul un devis au statut DRAFT peut être envoyé.');
     }
     if (quote.lineItems.length === 0) {
-      throw new BadRequestException('Kalemsiz teklif gönderilemez.');
+      throw new BadRequestException('Un devis sans ligne ne peut pas être envoyé.');
     }
     const sent = await this.repo.sendWithNumber(
       id,
@@ -203,7 +203,7 @@ export class QuotesService {
     const quote = await this.getOrThrow(id);
     // CONVERTED teklif silinemez (fatura ile bağlı; iz korunur).
     if (quote.status === QuoteStatus.CONVERTED) {
-      throw new ConflictException('Dönüştürülmüş teklif silinemez.');
+      throw new ConflictException('Un devis converti ne peut pas être supprimé.');
     }
     await this.repo.delete(id);
     this.logger.log(`quote.delete by=${actor.id} quote=${id}`);
@@ -253,7 +253,7 @@ export class QuotesService {
         );
       }
       if (new D(it.quantity).lte(0)) {
-        throw new BadRequestException('Miktar pozitif olmalı.');
+        throw new BadRequestException('La quantité doit être positive.');
       }
       out.push({
         productId: it.productId,
@@ -267,14 +267,14 @@ export class QuotesService {
 
   private async getOrThrow(id: string): Promise<QuoteWithItems> {
     const quote = await this.repo.findById(id);
-    if (!quote) throw new NotFoundException('Teklif bulunamadı');
+    if (!quote) throw new NotFoundException('Devis introuvable');
     return quote;
   }
 
   private assertTaxRate(taxRate: string): void {
     const t = new D(taxRate);
     if (t.lt(0) || t.gt(100)) {
-      throw new BadRequestException('taxRate 0–100 aralığında olmalı.');
+      throw new BadRequestException('taxRate doit être compris entre 0 et 100.');
     }
   }
 

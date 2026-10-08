@@ -75,7 +75,7 @@ export class CompetitorsService {
 
   private async getOrThrow(id: string) {
     const c = await this.repo.findById(id);
-    if (!c) throw new NotFoundException('Rakip bulunamadı');
+    if (!c) throw new NotFoundException('Concurrent introuvable');
     return c;
   }
 }

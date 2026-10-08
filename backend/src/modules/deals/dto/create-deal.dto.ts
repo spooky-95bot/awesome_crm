@@ -56,7 +56,7 @@ export class CreateDealDto {
   @IsNumberString()
   value?: string;
 
-  @ApiPropertyOptional({ example: 'TRY', default: 'TRY' })
+  @ApiPropertyOptional({ example: 'EUR', default: 'EUR' })
   @IsOptional()
   @IsString()
   @Length(3, 3)

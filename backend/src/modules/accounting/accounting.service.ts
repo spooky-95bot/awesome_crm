@@ -39,7 +39,7 @@ export class AccountingService {
 
   async syncInvoice(invoiceId: string) {
     const invoice = await this.repo.findInvoice(invoiceId);
-    if (!invoice) throw new NotFoundException('Fatura bulunamadı.');
+    if (!invoice) throw new NotFoundException('Facture introuvable.');
 
     // Önce sağlayıcı kontrolü (öncelik: quickbooks → xero) — yoksa net 400.
     const provider = (await this.oauth.getFreshAccessToken('quickbooks'))
@@ -64,7 +64,7 @@ export class AccountingService {
 
     const creds = await this.oauth.getFreshAccessToken(provider);
     if (!creds) {
-      throw new BadRequestException('Sağlayıcı token alınamadı.');
+      throw new BadRequestException("Impossible d'obtenir le jeton du fournisseur.");
     }
 
     try {

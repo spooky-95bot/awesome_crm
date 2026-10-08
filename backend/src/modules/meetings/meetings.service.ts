@@ -19,7 +19,7 @@ export class MeetingsService {
 
   async create(dto: CreateMeetingDto, actor: AuthenticatedUser) {
     if (new Date(dto.endsAt) <= new Date(dto.startsAt)) {
-      throw new BadRequestException('Bitiş, başlangıçtan sonra olmalı.');
+      throw new BadRequestException('La fin doit être postérieure au début.');
     }
     return this.repo.create({
       title: dto.title,
@@ -43,7 +43,7 @@ export class MeetingsService {
 
   async findOne(id: string) {
     const m = await this.repo.findById(id);
-    if (!m) throw new NotFoundException('Toplantı bulunamadı');
+    if (!m) throw new NotFoundException('Rendez-vous introuvable');
     return m;
   }
 

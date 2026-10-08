@@ -23,7 +23,7 @@ const dealRecord = (over: Record<string, unknown> = {}) => ({
   phone: null,
   company: null,
   value: null as Prisma.Decimal | null,
-  currency: 'TRY',
+  currency: 'EUR',
   rank: new Prisma.Decimal(1),
   ownerId: 'actor-1',
   status: DealStatus.OPEN,

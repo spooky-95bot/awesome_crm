@@ -1770,7 +1770,6 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const languages = useMemo(
     () => [
       { code: 'fr', name: 'Français', builtin: true },
-      { code: 'tr', name: 'Türkçe', builtin: true },
       { code: 'en', name: 'English', builtin: true },
       ...Object.entries(custom).map(([code, v]) => ({
         code,

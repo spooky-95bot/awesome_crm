@@ -89,7 +89,7 @@ export class AdRadarService {
     try {
       parsed = JSON.parse(res.body) as typeof parsed;
     } catch {
-      throw new BadRequestException('Meta yanıtı çözümlenemedi.');
+      throw new BadRequestException('Réponse Meta illisible.');
     }
 
     const ads = (parsed.data ?? []).map((a) => ({
@@ -126,7 +126,7 @@ export class AdRadarService {
 
   async removeSaved(id: string) {
     const row = await this.repo.findById(id);
-    if (!row) throw new NotFoundException('Kayıtlı reklam bulunamadı');
+    if (!row) throw new NotFoundException('Publicité enregistrée introuvable');
     await this.repo.delete(id);
     return { deleted: true };
   }

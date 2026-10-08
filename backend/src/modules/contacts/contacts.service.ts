@@ -63,7 +63,7 @@ export class ContactsService {
 
   async findOne(id: string) {
     const contact = await this.repo.findById(id);
-    if (!contact) throw new NotFoundException('Kişi bulunamadı');
+    if (!contact) throw new NotFoundException('Contact introuvable');
     return this.view(contact as ContactRow);
   }
 
@@ -90,7 +90,7 @@ export class ContactsService {
 
   private async assertCompany(companyId: string) {
     const exists = await this.repo.companyExists(companyId);
-    if (!exists) throw new BadRequestException('Geçersiz companyId.');
+    if (!exists) throw new BadRequestException('companyId invalide.');
   }
 
   private view(c: ContactRow) {

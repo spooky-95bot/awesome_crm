@@ -44,7 +44,7 @@ export class SecretCryptoService {
 
   decrypt(payload: string): string {
     if (!payload.startsWith(PREFIX)) {
-      throw new InternalServerErrorException('Bilinmeyen şifre biçimi.');
+      throw new InternalServerErrorException('Format de mot de passe inconnu.');
     }
     const raw = Buffer.from(payload.slice(PREFIX.length), 'base64');
     const iv = raw.subarray(0, IV_LEN);

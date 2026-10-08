@@ -34,7 +34,7 @@ export class AutomationService {
 
   async findOne(id: string) {
     const rule = await this.repo.findById(id);
-    if (!rule) throw new NotFoundException('Kural bulunamadı');
+    if (!rule) throw new NotFoundException('Règle introuvable');
     return rule;
   }
 

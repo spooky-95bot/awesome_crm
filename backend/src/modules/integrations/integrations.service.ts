@@ -93,10 +93,10 @@ export class IntegrationsService {
   }) {
     const secret = this.config.get<string>('INBOUND_WEBHOOK_SECRET');
     if (!secret) {
-      throw new BadRequestException('Gelen webhook yapılandırılmamış.');
+      throw new BadRequestException('Webhook entrant non configuré.');
     }
     if (!params.signature || !params.timestamp) {
-      throw new UnauthorizedException('İmza gerekli.');
+      throw new UnauthorizedException('Signature requise.');
     }
     const ok = verifySignature({
       secret,
@@ -106,7 +106,7 @@ export class IntegrationsService {
       nowSec: Math.floor(Date.now() / 1000),
     });
     if (!ok) {
-      throw new UnauthorizedException('Geçersiz imza.');
+      throw new UnauthorizedException('Signature invalide.');
     }
 
     // Idempotency: aynı delivery daha önce işlendiyse tekrar işleme yok.
@@ -125,7 +125,7 @@ export class IntegrationsService {
   private async getSubOrThrow(id: string) {
     const sub = await this.repo.findSubscriptionById(id);
     if (!sub) {
-      throw new NotFoundException('Webhook aboneliği bulunamadı');
+      throw new NotFoundException('Abonnement webhook introuvable');
     }
     return sub;
   }

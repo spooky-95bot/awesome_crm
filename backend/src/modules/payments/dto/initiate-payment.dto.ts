@@ -30,13 +30,13 @@ export class InitiatePaymentDto {
   @Matches(/^\d{11}$/, { message: 'identityNumber 11 haneli olmalı.' })
   identityNumber?: string;
 
-  @ApiPropertyOptional({ example: 'Istanbul' })
+  @ApiPropertyOptional({ example: 'Paris' })
   @IsOptional()
   @IsString()
   @MaxLength(120)
   city?: string;
 
-  @ApiPropertyOptional({ example: 'Turkey' })
+  @ApiPropertyOptional({ example: 'France' })
   @IsOptional()
   @IsString()
   @MaxLength(120)
