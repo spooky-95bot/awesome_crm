@@ -43,8 +43,36 @@
 
 ---
 
+## Lot 2 : Pages légales + 404 + tiers — ✅ TERMINÉ
+
+### Inspection préalable
+- Seul service tiers : **Google Fonts** (transfert d'IP à Google → non conforme RGPD France)
+- **Aucun cookie, localStorage, analytics** → bannière de consentement **non nécessaire** (pas de bannière artificielle posée)
+
+### Réalisé
+- **Polices auto-hébergées** : 16 woff2 (latin + latin-ext) dans `assets/fonts/`, CSS local. Zéro référence Google.
+- `mentions-legales.html` — éditeur, hébergement, propriété intellectuelle, activité réglementée
+- `confidentialite.html` — RGPD : données, finalités, destinataires, durées (7 j / relation / 10 ans), droits, CNIL, cookies
+- `cgv.html` — 12 articles (réservation, annulation, paiement, cartes cadeaux, rétractation, médiation)
+- `404.html` — page personnalisée, `noindex`
+- Footer du site : liens légaux ajoutés ; favicon créé ; sitemap mis à jour
+
+### Champs « à compléter » laissés volontairement (aucune invention)
+- Identité juridique : forme, adresse siège, SIRET, TVA, responsable de publication, téléphone
+- Hébergeur : coordonnées exactes à confirmer
+- TVA applicable, délais d'annulation, moyens de paiement, cartes cadeaux, médiateur
+
+### Preuves (production)
+- `mentions-legales.html`, `confidentialite.html`, `cgv.html` → **HTTP 200**
+- Route inexistante → **HTTP 404** avec la page Elysence (titre, texte, bouton vérifiés)
+- Polices : `fonts.css` 200, woff2 200, favicon 200
+- **Zéro domaine tiers** (hors propre domaine + schema.org), **zéro cookie**, aucun `set-cookie`
+- Non-régression réservation : `POST /api/reservations` → **200**
+- Rendu 390 px : footer + pages + 404 vérifiés au navigateur
+
+---
+
 ## Lots suivants (à faire)
-- Lot 2 : pages légales (mentions, RGPD, CGV), bandeau cookies, page 404
-- Lot 3 : galerie photos, FAQ complète, témoignages (section prête à remplir)
+- Lot 3 : galerie photos, FAQ complète, témoignages (section prête à remplir), e-mail de confirmation cliente
 - Lot 4 : SEO (sitemap, robots, données structurées), accessibilité, performance
 - Lot 5 : parcours complet cliente + facture PDF, nettoyage final
