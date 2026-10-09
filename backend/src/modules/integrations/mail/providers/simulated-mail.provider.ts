@@ -1,5 +1,5 @@
 // src/modules/integrations/mail/providers/simulated-mail.provider.ts
-// Geliştirme/test: GERÇEKTEN göndermez; render eder ve loglar. EmailLog'u MailService yazar.
+// Développement/test : n'envoie RIEN réellement ; rend le modèle et journalise. EmailLog est écrit par MailService.
 import { Injectable, Logger } from '@nestjs/common';
 import { IMailProvider, MailInput } from '../mail-provider.interface';
 
@@ -9,7 +9,7 @@ export class SimulatedMailProvider implements IMailProvider {
   private readonly logger = new Logger(SimulatedMailProvider.name);
 
   async send(input: MailInput): Promise<void> {
-    // Gerçek gönderim yok. PII/gizli içerik loglanmaz; yalnız meta.
+    // Aucun envoi réel. Aucune donnée personnelle n'est journalisée ; uniquement des métadonnées.
     this.logger.log(
       `[SIMULATED] mail template=${input.template} to=${maskEmail(input.to)}`,
     );

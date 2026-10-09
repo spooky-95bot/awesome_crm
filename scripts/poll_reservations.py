@@ -94,31 +94,56 @@ def mark_reservation(secret: str, reservation_id: str, status: str) -> bool:
 
 def main():
     secret = load_secret()
-    
-    # Récupérer les réservations en attente
+
+    # 1) Traiter les demandes de réservation en attente
     reservations = fetch_pending_reservations(secret)
-    
-    if not reservations:
-        return 0
-    
-    print(f"{len(reservations)} réservation(s) en attente")
-    
-    for r in reservations:
-        rid = r.get("id", "?")
-        print(f"  → Traitement {rid} ({r.get('firstName', '')} {r.get('lastName', '')})")
-        
-        # Envoyer au CRM
-        if send_to_crm(r):
-            # Marquer comme traitée
-            if mark_reservation(secret, rid, "processed"):
-                print(f"    ✓ Traitée et envoyée au CRM")
+
+    if reservations:
+        print(f"{len(reservations)} réservation(s) en attente")
+        for r in reservations:
+            rid = r.get("id", "?")
+            print(f"  → Traitement {rid} ({r.get('firstName', '')} {r.get('lastName', '')})")
+
+            if send_to_crm(r):
+                if mark_reservation(secret, rid, "processed"):
+                    print(f"    ✓ Traitée et envoyée au CRM")
+                else:
+                    print(f"    ✗ Envoyée au CRM mais marquage échoué (reste en file)", file=sys.stderr)
             else:
-                print(f"    ✗ Envoyée au CRM mais marquage échoué (reste en file)", file=sys.stderr)
-        else:
-            # Échec CRM → reste en file, sera retentée
-            print(f"    ✗ Échec CRM → reste en file", file=sys.stderr)
-    
+                print(f"    ✗ Échec CRM → reste en file", file=sys.stderr)
+
+    # 2) Traiter la file d'e-mails sortants (même cycle, aucun timer supplémentaire)
+    process_mail_outbox(secret)
+
     return 0
+
+
+def process_mail_outbox(secret: str) -> None:
+    """Déclenche le traitement de la file e-mail du CRM. Ne journalise aucun secret."""
+    payload = json.dumps({}).encode()
+    req = urllib.request.Request(
+        f"http://127.0.0.1:3100/api/v1/mail/process-outbox",
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {secret}",
+            "User-Agent": USER_AGENT,
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+            result = json.loads(resp.read().decode())
+            summary = (result.get("data") or {})
+            if summary:
+                parts = ", ".join(f"{k}={v}" for k, v in sorted(summary.items()))
+                print(f"  ✉ File e-mail traitée : {parts}")
+    except urllib.error.HTTPError as e:
+        # 404/403 = endpoint indisponible : on sort proprement, sans boucle.
+        if e.code not in (403, 404):
+            print(f"  ✉ File e-mail : HTTP {e.code}", file=sys.stderr)
+    except Exception as e:
+        print(f"  ✉ File e-mail : {type(e).__name__}", file=sys.stderr)
 
 
 if __name__ == "__main__":

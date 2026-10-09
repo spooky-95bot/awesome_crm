@@ -7,6 +7,7 @@ import { WebhookDispatcherService } from './webhook-dispatcher.service';
 import { WebhookEventHandler } from './webhook-event.handler';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from './mail/mail.service';
+import { MailOutboxController } from './mail/mail-outbox.controller';
 import { MAIL_PROVIDER } from './mail/mail-provider.interface';
 import { SimulatedMailProvider } from './mail/providers/simulated-mail.provider';
 import { SmtpMailProvider } from './mail/providers/smtp-mail.provider';
@@ -14,7 +15,7 @@ import { HTTP_CLIENT } from './http/http-client.interface';
 import { FetchHttpClient } from './http/fetch-http.client';
 
 @Module({
-  controllers: [IntegrationsController],
+  controllers: [IntegrationsController, MailOutboxController],
   providers: [
     IntegrationsService,
     IntegrationsRepository,
@@ -23,7 +24,7 @@ import { FetchHttpClient } from './http/fetch-http.client';
     MailService,
     SimulatedMailProvider,
     SmtpMailProvider,
-    // Sağlayıcı seçimi MAIL_DRIVER env'i ile (simulated | smtp).
+    // Sélection du fournisseur via MAIL_DRIVER (simulated | smtp).
     {
       provide: MAIL_PROVIDER,
       inject: [ConfigService, SimulatedMailProvider, SmtpMailProvider],

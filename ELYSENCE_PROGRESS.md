@@ -110,3 +110,39 @@ Solution gratuite recommandée : un compte SMTP gratuit (Brevo 300 mails/jour, o
 - Lot 3b : e-mail de confirmation cliente (en attente des champs SMTP ci-dessus)
 - Lot 4 : SEO (sitemap, robots, données structurées), accessibilité, performance
 - Lot 5 : parcours complet cliente + facture PDF, nettoyage final
+
+---
+
+## Messagerie (orientation A validée) — moteur souverain, transport interchangeable
+
+### Réalisé et prouvé
+1. **Modèles transactionnels** (`c94fec4`) : `reservation.confirmed/cancelled/updated/received/admin`.
+   Français, EUR, libellés de repli. 8 tests.
+2. **File persistante** (`76de0eb`) : table `EmailOutbox` (statut, tentatives, `maxAttempts`,
+   `nextAttemptAt`, `idempotencyKey` unique, `tenantId`, `driver`, `sentAt`).
+   Migration appliquée (non destructive). `enqueue/deliver/claimDue/processDue`.
+   Recul exponentiel 1 min → 4 h, `DEAD` après épuisement. 15 tests.
+   Traduction de 63 commentaires turcs de `schema.prisma`.
+3. **Worker** : endpoint `POST /mail/process-outbox` (secret partagé, `@SkipThrottle`),
+   intégré au poller systemd **existant** — aucun nouveau timer.
+
+### Preuves en conditions réelles
+- Sans/mauvais secret → **403** ; bon secret → **200** et réponse plate
+- 2 messages en file → traités → `SIMULATED=2`, **0 `SENT`** (simulé jamais confondu)
+- Doublon (même `idempotencyKey`) → rejeté par contrainte unique PostgreSQL
+- Échec puis reprise → `FAILED` → retry → `SIMULATED`, tentatives incrémentées
+- 2ᵉ passage → **aucun renvoi** (EmailLog inchangé)
+- Intégration via le poller : `✉ File e-mail traitée : SIMULATED=1`
+- Suite complète : **135 tests**, tsc propre, aucune régression
+
+### État
+- `MAIL_DRIVER=simulated` **inchangé** — aucun e-mail réel envoyé
+- Secret `POLL_SECRET` dans `.env` (gitignoré, non versionné)
+- Données de test supprimées (EmailOutbox et EmailLog vides)
+
+### Reste (nécessite votre intervention)
+- Fournir les identifiants SMTP (`MAIL_DRIVER=smtp`, `SMTP_HOST/PORT/SECURE/USER/PASS/FROM`)
+  puis **autoriser explicitement un envoi réel** pour passer de `SIMULATED` à `SENT`.
+- Étape 7 (supervision/alerte sur `FAILED` ou file stagnante) non implémentée.
+- Branchement des déclencheurs métier (confirmation à la validation d'un rendez-vous CRM)
+  à faire quand le transport réel sera validé.

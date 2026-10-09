@@ -1,5 +1,5 @@
 // src/modules/integrations/mail/mail-provider.interface.ts
-// Sağlayıcı soyutlaması (DIP): tüketiciler arayüze bağımlı, somut sınıfa değil.
+// Abstraction du fournisseur (DIP) : les consommateurs dépendent de l'interface, pas de la classe concrète.
 export const MAIL_PROVIDER = Symbol('MAIL_PROVIDER');
 
 export interface MailInput {
