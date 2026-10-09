@@ -28,6 +28,14 @@
 - Timer `enabled`, `OnBootSec=1min`, redémarrage timer OK
 - Données de test supprimées (CRM + KV vides)
 
+### Re-vérification du 2026-10-09 (reprise de mission)
+- Site prod : `API_URL='/api/reservations'` (tunnel mort retiré), POST → 200, GET sans secret → 401
+- **Parcours formulaire réel testé au navigateur (390 px)** : saisie → clic → message de succès affiché
+- Réservation issue du formulaire réel → poller → CRM (`Cliente Formulaire`, statut NEW, tél. conservé)
+- 0 doublon (2 UUID distincts = 2 leads distincts), KV et CRM nettoyés après test
+- Dépôt : `master`, arbre propre, HEAD `675f203`, aucun fichier non suivi
+- Providers : RAM 18 Go dispo, disque 12 Go libres — aucun quota bloquant
+
 ### Décisions prises
 - Pipeline de publication existant uniquement (`deployMissionWorkspace`), aucun second mécanisme
 - Wrangler non appelé directement (passe par le pipeline)
