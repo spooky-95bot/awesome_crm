@@ -46,3 +46,6 @@ tmp/
 # Documentation interne conservée en local uniquement.
 docs/
 /README.tr.md
+
+# Secret local du poller de réservations (jamais versionné)
+.reservation-secret
