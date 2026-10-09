@@ -202,6 +202,7 @@ model Invoice {
   customerEmail String?
   status        InvoiceStatus     @default(DRAFT)
   currency      String            @default("EUR")
+  pricesIncludeTax Boolean        @default(false) // true = unitPrice TTC (prix affichés Elysence)
   subtotal      Decimal           @db.Decimal(14, 2)
   taxRate       Decimal           @db.Decimal(5, 2) // % KDV
   taxAmount     Decimal           @db.Decimal(14, 2)

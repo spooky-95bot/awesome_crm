@@ -10,7 +10,7 @@ export class QueryInvoiceDto extends PaginationDto {
   @IsEnum(InvoiceStatus)
   status?: InvoiceStatus;
 
-  // Müşteri adı / numara araması (Prisma parametrik).
+  // Recherche par nom de cliente / numéro (Prisma paramétré).
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

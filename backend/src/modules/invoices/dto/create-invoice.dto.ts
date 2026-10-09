@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsOptional,
   IsString,
@@ -13,7 +14,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-// Pozitif ondalık (negatif/harf reddi → S-4.3). Manipüle quantity/price engeli.
+// Décimal positif (rejet des négatifs/lettres → S-4.3). Empêche la manipulation de quantity/price.
 const POSITIVE_DECIMAL = /^\d{1,12}(\.\d{1,3})?$/;
 
 export class LineItemDto {
@@ -23,11 +24,11 @@ export class LineItemDto {
   description: string;
 
   @ApiProperty({ example: '2' })
-  @Matches(POSITIVE_DECIMAL, { message: 'quantity pozitif bir sayı olmalı.' })
+  @Matches(POSITIVE_DECIMAL, { message: 'quantity doit être un nombre positif.' })
   quantity: string;
 
   @ApiProperty({ example: '1500.00' })
-  @Matches(POSITIVE_DECIMAL, { message: 'unitPrice pozitif bir sayı olmalı.' })
+  @Matches(POSITIVE_DECIMAL, { message: 'unitPrice doit être un nombre positif.' })
   unitPrice: string;
 }
 
@@ -47,15 +48,22 @@ export class CreateInvoiceDto {
   @IsEmail()
   customerEmail?: string;
 
-  // KDV oranı (% — örn "20"). 0–100 aralığı Service'te doğrulanır.
+  // Taux de TVA (% — ex. "20"). La plage 0–100 est validée par le service.
   @ApiProperty({ example: '20' })
-  @Matches(/^\d{1,3}(\.\d{1,2})?$/, { message: 'taxRate 0–100 arası olmalı.' })
+  @Matches(/^\d{1,3}(\.\d{1,2})?$/, { message: 'taxRate doit être compris entre 0 et 100.' })
   taxRate: string;
 
   @ApiPropertyOptional({ example: 'EUR' })
   @IsOptional()
   @IsString()
   currency?: string;
+
+  // true = les prix unitaires sont TTC (tarifs affichés). La TVA est alors
+  // extraite du montant, et non ajoutée. Défaut : false (prix HT).
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  pricesIncludeTax?: boolean;
 
   @ApiProperty({ type: [LineItemDto] })
   @IsArray()

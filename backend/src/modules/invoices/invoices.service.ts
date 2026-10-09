@@ -1,5 +1,5 @@
 // src/modules/invoices/invoices.service.ts
-// İŞ MANTIĞI: fatura yaşam döngüsü, sunucu-taraflı Decimal hesap, finansal maskeleme.
+// LOGIQUE MÉTIER : cycle de vie de la facture, calcul Decimal côté serveur, masquage financier.
 import {
   BadRequestException,
   ConflictException,
@@ -12,7 +12,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PERMISSIONS } from '../../common/constants/permission.enum';
 import { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { InvoicesRepository } from './invoices.repository';
-import { calcTotals, deriveStatus } from './money.util';
+import { calcTotals, calcTotalsFromGross, deriveStatus } from './money.util';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -36,7 +36,11 @@ export class InvoicesService {
 
   async create(dto: CreateInvoiceDto, actor: AuthenticatedUser) {
     this.assertTaxRate(dto.taxRate);
-    const totals = calcTotals(dto.lineItems, dto.taxRate);
+    // Prix TTC (cas Elysence : les tarifs affichés incluent déjà la TVA) :
+    // la TVA est extraite du montant au lieu d'être ajoutée par-dessus.
+    const totals = dto.pricesIncludeTax
+      ? calcTotalsFromGross(dto.lineItems, dto.taxRate)
+      : calcTotals(dto.lineItems, dto.taxRate);
 
     const invoice = await this.repo.create(
       {
@@ -44,6 +48,7 @@ export class InvoicesService {
         customerName: dto.customerName,
         customerEmail: dto.customerEmail,
         currency: dto.currency ?? 'EUR',
+        pricesIncludeTax: dto.pricesIncludeTax ?? false,
         subtotal: totals.subtotal,
         taxRate: dto.taxRate,
         taxAmount: totals.taxAmount,
@@ -84,10 +89,10 @@ export class InvoicesService {
 
   async update(id: string, dto: UpdateInvoiceDto, actor: AuthenticatedUser) {
     const invoice = await this.getOrThrow(id);
-    // Immutability: yalnız DRAFT düzenlenebilir.
+    // Immuabilité : seul un DRAFT est modifiable.
     if (invoice.status !== InvoiceStatus.DRAFT) {
       throw new ConflictException(
-        'Yalnız DRAFT fatura düzenlenebilir (SENT+ değişmez).',
+        'Seule une facture DRAFT est modifiable (SENT+ est figée).',
       );
     }
     const taxRate = dto.taxRate ?? invoice.taxRate.toString();
@@ -122,7 +127,7 @@ export class InvoicesService {
     if (invoice.lineItems.length === 0) {
       throw new BadRequestException('Une facture sans ligne ne peut pas être émise.');
     }
-    // Sunucu UTC: yıl + vade.
+    // Serveur en UTC : année + échéance.
     const year = new Date().getUTCFullYear();
     const dueAt = new Date(Date.now() + DUE_DAYS * 24 * 60 * 60 * 1000);
     const issued = await this.repo.issueWithNumber(id, year, dueAt);
@@ -155,10 +160,10 @@ export class InvoicesService {
       throw new BadRequestException('Le montant du paiement doit être positif.');
     }
     const newAmountPaid = invoice.amountPaid.plus(amount);
-    // Aşırı ödeme engeli.
+    // Blocage du surpaiement.
     if (newAmountPaid.gt(invoice.total)) {
       throw new BadRequestException(
-        'Ödeme toplam tutarı aşamaz (aşırı ödeme).',
+        'Le paiement ne peut pas dépasser le total (surpaiement).',
       );
     }
     const status = deriveStatus(newAmountPaid, invoice.total);
@@ -174,7 +179,7 @@ export class InvoicesService {
     this.logger.log(
       `invoice.payment by=${actor.id} invoice=${id} amount=${dto.amount} status=${status}`,
     );
-    // Tam ödeme → invoice.paid olayı.
+    // Paiement complet → événement invoice.paid.
     if (status === InvoiceStatus.PAID) {
       this.events.emit('invoice.paid', {
         invoiceId: id,
@@ -190,10 +195,10 @@ export class InvoicesService {
     if (invoice.status === InvoiceStatus.CANCELLED) {
       throw new ConflictException('La facture est déjà annulée.');
     }
-    // PAID veya ödeme alınmış fatura iptal edilemez → credit note ile düzeltilir.
+    // Une facture PAID ou déjà payée ne peut être annulée → correction par note de crédit.
     if (invoice.status === InvoiceStatus.PAID || invoice.amountPaid.gt(0)) {
       throw new ConflictException(
-        'Ödeme alınmış/ödenmiş fatura iptal edilemez (credit note kullanın).',
+        'Une facture payée ne peut être annulée (utilisez une note de crédit).',
       );
     }
     const cancelled = await this.repo.cancel(id);
@@ -201,8 +206,8 @@ export class InvoicesService {
     return this.toView(cancelled, actor);
   }
 
-  // v4.6 — iyzico ödeme başlatma için anlık görüntü (kalan bakiye dahil). Repo erişimi
-  // yalnız servis üstünden; ödeme modülü faturayı doğrudan okumaz.
+  // v4.6 — instantané pour initier un paiement iyzico (solde restant inclus). Accès au repo
+  // uniquement via le service ; le module paiement ne lit pas la facture directement.
   async paymentSnapshot(id: string) {
     const invoice = await this.getOrThrow(id);
     return {
@@ -218,9 +223,9 @@ export class InvoicesService {
     };
   }
 
-  // v4.6 — Dış sağlayıcı (iyzico) ödemesini kaydeder. actor YOK (callback public);
-  // recordedById çağıran taraftan (ödeme niyetini başlatan kullanıcı). addPayment ile
-  // AYNI finansal güvenceler: pozitiflik, aşırı ödeme engeli, durum türetimi, invoice.paid.
+  // v4.6 — Enregistre un paiement d'un fournisseur externe (iyzico). Aucun actor (callback public) ;
+  // recordedById provient de l'appelant (utilisateur ayant initié l'intention de paiement). Mêmes
+  // garanties financières qu'addPayment : positivité, anti-surpaiement, dérivation du statut, invoice.paid.
   async applyExternalPayment(
     id: string,
     amount: string,
@@ -242,7 +247,7 @@ export class InvoicesService {
     const newAmountPaid = invoice.amountPaid.plus(amt);
     if (newAmountPaid.gt(invoice.total)) {
       throw new BadRequestException(
-        'Ödeme toplam tutarı aşamaz (aşırı ödeme).',
+        'Le paiement ne peut pas dépasser le total (surpaiement).',
       );
     }
     const status = deriveStatus(newAmountPaid, invoice.total);
@@ -268,7 +273,7 @@ export class InvoicesService {
     return updated;
   }
 
-  // --- Yardımcılar ---
+  // --- Assistants ---
 
   private async getOrThrow(id: string): Promise<InvoiceWithRelations> {
     const invoice = await this.repo.findById(id);
@@ -285,7 +290,7 @@ export class InvoicesService {
     }
   }
 
-  // Finansal maskeleme: invoice.read_financial yoksa tutar/kalem/ödeme API'de KESİLİR.
+  // Masquage financier : sans invoice.read_financial, montants/lignes/paiements sont RETIRÉS de l'API.
   private toView(invoice: InvoiceWithRelations, actor: AuthenticatedUser) {
     const base = {
       id: invoice.id,
@@ -295,6 +300,7 @@ export class InvoicesService {
       customerEmail: invoice.customerEmail,
       status: invoice.status,
       currency: invoice.currency,
+      pricesIncludeTax: invoice.pricesIncludeTax,
       issuedAt: invoice.issuedAt,
       dueAt: invoice.dueAt,
       createdAt: invoice.createdAt,

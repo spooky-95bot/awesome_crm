@@ -1,6 +1,6 @@
 // src/modules/invoices/invoices.repository.ts
-// VERİ ERİŞİMİ: Prisma çağrıları YALNIZCA burada.
-// Sıralı numara: ON CONFLICT ile satır kilitli atomik artış → atlamasız, çakışmasız.
+// ACCÈS AUX DONNÉES : les appels Prisma sont UNIQUEMENT ici.
+// Numéro séquentiel : incrément atomique avec verrou de ligne (ON CONFLICT) → sans saut ni collision.
 import { Injectable } from '@nestjs/common';
 import { InvoiceStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -22,6 +22,7 @@ export class InvoicesRepository {
       customerName: string;
       customerEmail?: string;
       currency: string;
+      pricesIncludeTax?: boolean;
       subtotal: Prisma.Decimal;
       taxRate: Prisma.Decimal | string;
       taxAmount: Prisma.Decimal;
@@ -60,7 +61,7 @@ export class InvoicesRepository {
     return { items, total };
   }
 
-  // DRAFT fatura içeriğini değiştirir: kalemler silinip yeniden oluşturulur + toplamlar.
+  // Modifie le contenu d'un DRAFT : lignes supprimées puis recréées + totaux.
   replaceDraft(
     id: string,
     scalars: {
@@ -83,7 +84,7 @@ export class InvoicesRepository {
     });
   }
 
-  // DRAFT → SENT: yıl sayacını atomik artırıp numara atar, tek transaction.
+  // DRAFT → SENT : incrémente atomiquement le compteur annuel et attribue le numéro, en une transaction.
   async issueWithNumber(id: string, year: number, dueAt: Date) {
     return this.prisma.$transaction(async (tx) => {
       const rows = await tx.$queryRaw<{ lastNumber: number }[]>(Prisma.sql`

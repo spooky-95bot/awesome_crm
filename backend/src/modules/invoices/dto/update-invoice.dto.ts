@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { LineItemDto } from './create-invoice.dto';
 
-// Yalnız DRAFT faturada geçerli (immutability Service'te zorlanır).
+// Valable uniquement sur une facture DRAFT (immuabilité imposée par le service).
 export class UpdateInvoiceDto {
   @ApiPropertyOptional()
   @IsOptional()
@@ -28,7 +28,7 @@ export class UpdateInvoiceDto {
 
   @ApiPropertyOptional({ example: '20' })
   @IsOptional()
-  @Matches(/^\d{1,3}(\.\d{1,2})?$/, { message: 'taxRate 0–100 arası olmalı.' })
+  @Matches(/^\d{1,3}(\.\d{1,2})?$/, { message: 'taxRate doit être compris entre 0 et 100.' })
   taxRate?: string;
 
   @ApiPropertyOptional({ type: [LineItemDto] })

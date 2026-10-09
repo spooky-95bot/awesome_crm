@@ -10,6 +10,7 @@ export interface InvoicePdfData {
   customerEmail: string | null;
   currency: string;
   subtotal: number;
+  pricesIncludeTax?: boolean;
   taxRate: number;
   taxAmount: number;
   total: number;
@@ -134,22 +135,44 @@ export class InvoicePdfService {
     const tx = 375;
     const tw = 170;
     doc.font('Helvetica').fillColor(MUTED).fontSize(10);
-    doc.text('Sous-total', tx, y, { width: 80 });
-    doc.fillColor(INK).text(money(data.subtotal, data.currency), tx + 80, y, {
-      width: 90,
-      align: 'right',
-    });
-    y += 18;
-    doc.fillColor(MUTED).text(`TVA (${data.taxRate} %)`, tx, y, { width: 80 });
-    doc.fillColor(INK).text(money(data.taxAmount, data.currency), tx + 80, y, {
-      width: 90,
-      align: 'right',
-    });
-    y += 22;
-    doc.moveTo(tx, y - 4).lineTo(545, y - 4).strokeColor(LINE).stroke();
-    doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(13);
-    doc.text('Total', tx, y, { width: 80 });
-    doc.text(money(data.total, data.currency), tx + 80, y, { width: 90, align: 'right' });
+    if (data.pricesIncludeTax) {
+      // Prix TTC : le total est la somme des lignes ; la TVA en est extraite.
+      doc.text('Total', tx, y, { width: 80 });
+      doc.fillColor(INK).text(money(data.total, data.currency), tx + 80, y, {
+        width: 90,
+        align: 'right',
+      });
+      y += 18;
+      doc.fillColor(MUTED).text(`dont TVA (${data.taxRate} %)`, tx, y, { width: 110 });
+      doc.fillColor(INK).text(money(data.taxAmount, data.currency), tx + 80, y, {
+        width: 90,
+        align: 'right',
+      });
+      y += 16;
+      doc.fillColor(MUTED).text('Base hors taxe', tx, y, { width: 110 });
+      doc.fillColor(INK).text(money(data.subtotal, data.currency), tx + 80, y, {
+        width: 90,
+        align: 'right',
+      });
+      y += 22;
+    } else {
+      doc.text('Sous-total', tx, y, { width: 80 });
+      doc.fillColor(INK).text(money(data.subtotal, data.currency), tx + 80, y, {
+        width: 90,
+        align: 'right',
+      });
+      y += 18;
+      doc.fillColor(MUTED).text(`TVA (${data.taxRate} %)`, tx, y, { width: 80 });
+      doc.fillColor(INK).text(money(data.taxAmount, data.currency), tx + 80, y, {
+        width: 90,
+        align: 'right',
+      });
+      y += 22;
+      doc.moveTo(tx, y - 4).lineTo(545, y - 4).strokeColor(LINE).stroke();
+      doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(13);
+      doc.text('Total', tx, y, { width: 80 });
+      doc.text(money(data.total, data.currency), tx + 80, y, { width: 90, align: 'right' });
+    }
 
     if (data.amountPaid > 0) {
       y += 20;

@@ -1,5 +1,5 @@
 // src/modules/invoices/invoices.controller.ts
-// SADECE HTTP: DTO + yetki dekoratörleri + servis çağrısı.
+// HTTP uniquement : DTO + décorateurs d'autorisation + appel du service.
 import {
   Body,
   Controller,
@@ -64,6 +64,7 @@ export class InvoicesController {
       customerName: inv.customerName,
       customerEmail: inv.customerEmail ?? null,
       currency: inv.currency,
+      pricesIncludeTax: Boolean(inv.pricesIncludeTax),
       subtotal: Number(inv.subtotal ?? 0),
       taxRate: Number(inv.taxRate ?? 0),
       taxAmount: Number(inv.taxAmount ?? 0),
@@ -90,7 +91,7 @@ export class InvoicesController {
   @Get(':id')
   @Permissions(PERMISSIONS.INVOICE.READ)
   @ApiOperation({
-    summary: 'Fatura detayı (tutarlar invoice.read_financial ile)',
+    summary: 'Détail de la facture (montants visibles avec invoice.read_financial)',
   })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
@@ -101,7 +102,7 @@ export class InvoicesController {
 
   @Post()
   @Permissions(PERMISSIONS.INVOICE.CREATE)
-  @ApiOperation({ summary: 'DRAFT fatura oluştur (sunucu hesabı)' })
+  @ApiOperation({ summary: 'Créer une facture DRAFT (calcul serveur)', })
   create(
     @Body() dto: CreateInvoiceDto,
     @CurrentUser() actor: AuthenticatedUser,
@@ -123,7 +124,7 @@ export class InvoicesController {
   @Post(':id/issue')
   @Permissions(PERMISSIONS.INVOICE.UPDATE)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'DRAFT→SENT: sıralı numara üret' })
+  @ApiOperation({ summary: 'DRAFT→SENT : génère un numéro séquentiel', })
   issue(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -134,7 +135,7 @@ export class InvoicesController {
   @Post(':id/payments')
   @Permissions(PERMISSIONS.INVOICE.UPDATE, PERMISSIONS.INVOICE.READ_FINANCIAL)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Ödeme kaydı (finansal)' })
+  @ApiOperation({ summary: 'Enregistrement d'un paiement (financier)' })
   addPayment(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreatePaymentDto,
@@ -146,7 +147,7 @@ export class InvoicesController {
   @Post(':id/cancel')
   @Permissions(PERMISSIONS.INVOICE.UPDATE)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Koşullu iptal (PAID/ödenmiş iptal edilemez)' })
+  @ApiOperation({ summary: 'Annulation conditionnelle (une facture PAID/payée ne peut être annulée)' })
   cancel(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() actor: AuthenticatedUser,

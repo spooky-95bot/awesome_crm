@@ -77,14 +77,14 @@ describe('InvoicesService', () => {
     lineItems: [{ description: 'Hizmet', quantity: '2', unitPrice: '1500.00' }],
   };
 
-  // Sunucu hesabı + finansal görünürlük
-  it('create: FINANCE finansal alanları görür; sunucu toplamı uygulanır', async () => {
+  // Calcul serveur + visibilité financière
+  it('create : FINANCE voit les champs financiers ; le total serveur est appliqué', async () => {
     repo.create.mockResolvedValue(invoiceRecord());
     const res = (await service.create(createDto, finance)) as Record<
       string,
       unknown
     >;
-    // repo.create sunucu-hesaplı toplamlarla çağrıldı
+    // repo.create appelé avec les totaux calculés côté serveur
     const arg = repo.create.mock.calls[0][0];
     expect(arg.subtotal.toString()).toBe('3000');
     expect(arg.total.toString()).toBe('3600');
@@ -92,7 +92,7 @@ describe('InvoicesService', () => {
   });
 
   // S-4.1 / E-4.2 — finansal maskeleme
-  it('create/görünüm: SALES finansal alanları GÖREMEZ (maskeli)', async () => {
+  it('create/vue : SALES NE VOIT PAS les champs financiers (masqués)', async () => {
     repo.create.mockResolvedValue(invoiceRecord());
     const res = (await service.create(createDto, sales)) as Record<
       string,
@@ -114,8 +114,8 @@ describe('InvoicesService', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  // U-4.4 — aşırı ödeme
-  it('addPayment: aşırı ödeme BadRequest', async () => {
+  // U-4.4 — surpaiement
+  it('addPayment : surpaiement → BadRequest', async () => {
     repo.findById.mockResolvedValue(
       invoiceRecord({
         status: InvoiceStatus.SENT,
@@ -128,7 +128,7 @@ describe('InvoicesService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('addPayment: kısmi ödeme → PARTIALLY_PAID', async () => {
+  it('addPayment : paiement partiel → PARTIALLY_PAID', async () => {
     repo.findById.mockResolvedValue(
       invoiceRecord({
         status: InvoiceStatus.SENT,
