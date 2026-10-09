@@ -135,7 +135,7 @@ export class InvoicesController {
   @Post(':id/payments')
   @Permissions(PERMISSIONS.INVOICE.UPDATE, PERMISSIONS.INVOICE.READ_FINANCIAL)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Enregistrement d'un paiement (financier)' })
+  @ApiOperation({ summary: "Enregistrement d'un paiement (financier)" })
   addPayment(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreatePaymentDto,
