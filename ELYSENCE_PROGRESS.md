@@ -146,3 +146,65 @@ Solution gratuite recommandée : un compte SMTP gratuit (Brevo 300 mails/jour, o
 - Étape 7 (supervision/alerte sur `FAILED` ou file stagnante) non implémentée.
 - Branchement des déclencheurs métier (confirmation à la validation d'un rendez-vous CRM)
   à faire quand le transport réel sera validé.
+
+---
+
+## Lot 4 : SEO, données structurées, accessibilité, performance — ✅ TERMINÉ
+
+### Réalisé
+- **JSON-LD BeautySalon enrichi** : `@id`, image, `priceRange` réel (40–89 €), `currenciesAccepted`,
+  `hasOfferCatalog` avec les **7 prestations et tarifs réels**
+- **JSON-LD FAQPage** : les 10 questions/réponses de la FAQ (éligible aux résultats enrichis)
+- **JSON-LD WebPage** sur les 3 pages légales
+- **Accessibilité** : skip-link (« Aller au contenu principal »), `main#main`, `aria-expanded`
+  + `aria-controls` sur le menu mobile, fermeture par Échap avec retour de focus,
+  focus visible renforcé (3 px or), `prefers-reduced-motion`
+- **Performance** : images 6,5 Mo → 621 Ko (−91 %), `loading="lazy"`, `decoding="async"`,
+  `width`/`height` sur les 14 images (évite le décalage de mise en page), preload des 2 polices principales
+- **SEO technique** : title, description, canonical, OG, Twitter, robots, favicon, lang=fr, h1 unique
+- **URLs canoniques** : liens internes et canonical harmonisés vers `/mentions-legales` (sans `.html`)
+  → plus de redirection 308
+
+### Preuves en production
+- 2 blocs JSON-LD valides (BeautySalon 7 offres, FAQPage 10 Q/R)
+- 6 pages en **200**, route inexistante en **404**, **0 lien interne cassé**
+- Skip-link visible au focus, menu mobile `aria-expanded` true/false vérifié au navigateur
+- 0 overflow horizontal en 390 px
+- Structure HTML : 0 erreur sur les 5 pages
+
+---
+
+## Lot 5 : Parcours complet, réservation/CRM, validation finale — ✅ TERMINÉ
+
+### Preuves (parcours réel, mobile 390 px)
+1. Découverte → h1 « L'art du rituel pour elle comme pour lui. »
+2. Tarifs → 7 prestations affichées
+3. Galerie → 3 images chargées (lazy vérifié après scroll)
+4. FAQ → ouverture/fermeture fonctionnelle
+5. Réservation → formulaire soumis → message de confirmation affiché
+6. CRM → lead créé (`NEW`), poller : « ✓ Traitée et envoyée au CRM »
+7. Facture PDF → 200, `%PDF-`, contenu vérifié
+
+### Correction majeure (signalée par la cliente)
+**Les prix affichés sont TTC.** Le moteur de facturation les traitait comme HT et ajoutait
+20 % par-dessus (69 € → 82,80 €). Corrigé : `calcTotalsFromGross` extrait la TVA du montant.
+- Vérifié : prix affiché **69 €** → total **69 €**, dont TVA 11,50 €, base HT 57,50 €
+- Comportement HT historique préservé (défaut `pricesIncludeTax=false`) : 100 HT → 120 TTC
+- PDF : affiche « Total / dont TVA / Base hors taxe » quand TTC
+
+### État final
+- **139 tests** passent (22 suites), `tsc` propre
+- Base nettoyée : 0 lead, 0 facture, 0 e-mail en file
+- `MAIL_DRIVER=simulated` inchangé
+
+### Reste bloquant (nécessite votre intervention)
+1. **Identifiants SMTP** + autorisation d'envoi réel → le déclencheur « confirmation à la cliente »
+   est prêt mais n'est pas branché (aucun e-mail réel envoyé).
+2. **Informations légales** : SIRET, adresse, forme juridique, téléphone, horaires,
+   médiateur, TVA applicable (champs « à compléter » en place).
+3. **Domaine propre** : le site est sur `pages.dev` ; un domaine personnalisé améliorerait le SEO.
+
+### Déclencheur métier non branché (documenté, aucun envoi)
+Quand un rendez-vous est validé dans le CRM, il faudra appeler
+`MailService.enqueue({ template:'reservation.confirmed', idempotencyKey:'<resaId>:confirmed', tenantId:'elysence' })`.
+Le socle (file, idempotence, reprises, journal) est prêt ; il manque uniquement le transport réel.
