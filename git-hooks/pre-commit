@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Hook pre-commit — refuse tout commit contenant des traces turques.
+# Règle permanente : zéro turc (voir CLAUDE.md / AGENTS.md).
+#
+# Bloque : Türkçe, TRY, Istanbul, Turkey, meliksahk, caractères turcs (ğ ı ş İ).
+# Ignore : node_modules, .git, dist, .next et fichiers générés (lock, build, coverage).
+set -u
+
+# Fichiers STAGÉS uniquement (ce qui est vraiment en train d'être commité).
+mapfile -t STAGED < <(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
+
+if [ "${#STAGED[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+# Exclusions : chemins binaires/générés ou dépendances.
+is_ignored() {
+  case "$1" in
+    node_modules/*|.git/*|dist/*|.next/*|*/dist/*|*/.next/*|*package-lock.json|*yarn.lock|*pnpm-lock.yaml|coverage/*|*/coverage/*|out/*|*/out/*|build/*|*/build/*|.turbo/*|*.tsbuildinfo|git-hooks/pre-commit)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+# Motifs interdits (grep étendu). TRY en majuscules uniquement (le mot anglais "try" est légitime).
+PATTERNS='Türkçe|TRY|Istanbul|Turkey|meliksahk|[ğışİĞŞ]'
+
+VIOLATIONS=""
+for f in "${STAGED[@]}"; do
+  [ -f "$f" ] || continue
+  is_ignored "$f" && continue
+  if grep -qE "$PATTERNS" "$f" 2>/dev/null; then
+    VIOLATIONS+="$f"$'\n'
+  fi
+done
+
+if [ -n "$VIOLATIONS" ]; then
+  printf '\033[1;31m✗ Commit refusé : traces turques détectées\033[0m\n' >&2
+  printf 'Fichiers fautifs :\n' >&2
+  printf '%s' "$VIOLATIONS" | sed 's/^/  - /' >&2
+  printf '\nCorrigez ces fichiers (français, EUR, Paris/France, Maison ELYSENCE) puis recommitez.\n' >&2
+  exit 1
+fi
+
+exit 0
