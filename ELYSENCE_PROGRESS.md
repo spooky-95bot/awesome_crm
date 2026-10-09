@@ -72,7 +72,41 @@
 
 ---
 
+## Lot 3 : Galerie, FAQ, témoignages — ✅ TERMINÉ (e-mail en attente de SMTP)
+
+### Inspection préalable
+- Module mail du CRM existant : `MAIL_DRIVER=simulated` → **aucun e-mail réellement envoyé aujourd'hui**
+- Providers présents : `simulated` et `smtp` (SMTP_HOST/PORT/SECURE/USER/PASS/FROM)
+- Images : 3 vraies photos de massage (4000×6000, 1,7–2,8 Mo) ; 2 jpeg = visuels marketing (affiche tarifs, livre fondateur) → **non utilisés** (ce ne sont pas des photos de lieu)
+
+### Réalisé
+- **Images optimisées** : 6,5 Mo → 621 Ko (−91 %), 1600 px + vignettes 800 px
+- **Galerie** `#galerie` : 3 photos légendées (vérifiées par analyse visuelle, pas d'invention), `loading="lazy"`, `alt` descriptifs
+- **FAQ complète** : 4 → 10 questions (réservation, délai, grossesse, allergies, annulation, cartes cadeaux, paiement)
+- **Témoignages** `#avis` : section **prête à remplir**, aucun avis inventé, lien mailto pour recueillir les avis
+- Lien « Galerie » ajouté à la navigation
+
+### Preuves (production)
+- Images : HTTP 200 (243/243/133 Ko), chargées au navigateur 390 px
+- Sections `galerie`/`avis`/`tarifs` présentes ; 10 `<details>` ; 3 `<figure>` ; placeholder témoignage présent
+- HTML valide : **0 erreur** de structure (parseur), 0 image sans `alt`, 0 id dupliqué, 0 lien cassé
+- 0 overflow horizontal en 390 px
+- Non-régression : `POST /api/reservations` → **200**
+- Données de test supprimées (CRM + KV)
+
+### ⚠️ Blocage e-mail (champ à fournir)
+L'e-mail de confirmation cliente **nécessite un SMTP**. Aujourd'hui `MAIL_DRIVER=simulated` : rien n'est envoyé.
+**Champs manquants à fournir** (backend/.env) :
+- `MAIL_DRIVER=smtp`
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`
+- `SMTP_USER`, `SMTP_PASS`
+- `SMTP_FROM`
+
+Solution gratuite recommandée : un compte SMTP gratuit (Brevo 300 mails/jour, ou Gmail avec mot de passe d'application). Dès que ces valeurs sont fournies, l'envoi de confirmation est immédiatement opérationnel (module déjà en place).
+
+---
+
 ## Lots suivants (à faire)
-- Lot 3 : galerie photos, FAQ complète, témoignages (section prête à remplir), e-mail de confirmation cliente
+- Lot 3b : e-mail de confirmation cliente (en attente des champs SMTP ci-dessus)
 - Lot 4 : SEO (sitemap, robots, données structurées), accessibilité, performance
 - Lot 5 : parcours complet cliente + facture PDF, nettoyage final
