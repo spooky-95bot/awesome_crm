@@ -21,6 +21,12 @@ reports, signed webhooks, AI assistant, and multi-tenancy.
 
 ---
 
+> **Après chaque clone**, lancez `bash setup.sh` à la racine pour activer le hook pre-commit
+> (refuse les traces turques : `Türkçe`, `TRY`, `Istanbul`, `Turkey`, `meliksahk`, caractères `ğışİ`).
+> Le hook ne survit **pas** automatiquement aux clones.
+
+---
+
 ## Table of contents
 
 - [What it offers](#what-it-offers)

@@ -16,15 +16,15 @@ fi
 # Exclusions : chemins binaires/générés ou dépendances.
 is_ignored() {
   case "$1" in
-    node_modules/*|.git/*|dist/*|.next/*|*/dist/*|*/.next/*|*package-lock.json|*yarn.lock|*pnpm-lock.yaml|coverage/*|*/coverage/*|out/*|*/out/*|build/*|*/build/*|.turbo/*|*.tsbuildinfo|git-hooks/pre-commit)
+    node_modules/*|.git/*|dist/*|.next/*|*/dist/*|*/.next/*|*package-lock.json|*yarn.lock|*pnpm-lock.yaml|coverage/*|*/coverage/*|out/*|*/out/*|build/*|*/build/*|.turbo/*|*.tsbuildinfo|git-hooks/pre-commit|README.md|setup.sh)
       return 0
       ;;
   esac
   return 1
 }
 
-# Motifs interdits (grep étendu). TRY en majuscules uniquement (le mot anglais "try" est légitime).
-PATTERNS='Türkçe|TRY|Istanbul|Turkey|meliksahk|[ğışİĞŞ]'
+# Motifs interdits (grep étendu). TRY en mot entier uniquement (RETRY, ENTRY, COUNTRY sont légitimes).
+PATTERNS='Türkçe|\bTRY\b|Istanbul|Turkey|meliksahk|[ğışİĞŞ]'
 
 VIOLATIONS=""
 for f in "${STAGED[@]}"; do
