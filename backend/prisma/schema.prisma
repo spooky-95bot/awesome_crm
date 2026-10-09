@@ -1,6 +1,6 @@
 // backend/prisma/schema.prisma
-// Faz 1 — Temel veri modeli: User, Role, Permission + ilişki tabloları + RefreshToken.
-// İlişki (join) tabloları açıkça modellenir → ileride ek alan (atayan/tarih) eklenebilir.
+// Phase 1 — Modèle de données de base : User, Role, Permission + tables de liaison + RefreshToken.
+// Les tables de liaison sont modélisées explicitement → ajout ultérieur de champs (auteur/date) possible.
 
 generator client {
   provider      = "prisma-client-js"
@@ -20,7 +20,7 @@ model User {
   firstName     String
   lastName      String
   isActive      Boolean        @default(true)
-  // v2.10 multi-tenancy: kullanıcı bir tenant'a bağlı (null = platform/cross-tenant).
+  // v2.10 multi-tenant : l'utilisateur est rattaché à un tenant (null = plateforme/inter-tenant).
   tenantId      String?
   roles         UserRole[]
   refreshTokens RefreshToken[]
@@ -51,7 +51,7 @@ model Permission {
   createdAt   DateTime         @default(now())
 }
 
-// --- İlişki (join) tabloları: many-to-many açık modellenir ---
+// --- Tables de liaison : many-to-many modélisé explicitement ---
 
 model UserRole {
   userId String
@@ -74,7 +74,7 @@ model RolePermission {
 model RefreshToken {
   id        String    @id @default(uuid())
   userId    String
-  tokenHash String // Refresh token'ın SHA-256 hash'i; ham token saklanmaz
+  tokenHash String // Hash SHA-256 du refresh token ; le token brut n'est jamais stocké
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
@@ -83,7 +83,7 @@ model RefreshToken {
   @@index([userId])
 }
 
-// ===== Faz 3 — Satış (Deal) & Kanban =====
+// ===== Phase 3 — Ventes (Deal) & Kanban =====
 
 model Pipeline {
   id        String   @id @default(uuid())
@@ -98,8 +98,8 @@ model Pipeline {
 model Stage {
   id         String   @id @default(uuid())
   pipelineId String
-  name       String // örn: Yeni, İletişim, Teklif, Kazanıldı, Kaybedildi
-  position   Int // sütun sırası
+  name       String // ex. : Nouveau, Contact, Devis, Gagné, Perdu
+  position   Int // ordre de colonne
   isWon      Boolean  @default(false)
   isLost     Boolean  @default(false)
   pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
@@ -124,12 +124,12 @@ model Deal {
   email        String?
   phone        String?
   company      String?
-  value        Decimal?       @db.Decimal(14, 2) // tahmini değer
+  value        Decimal?       @db.Decimal(14, 2) // valeur estimée
   currency     String         @default("EUR")
-  // Kanban içi sıralama — kesirli rank (çakışmasız taşıma için)
+  // Ordre dans le Kanban — rang fractionnaire (déplacement sans collision)
   rank         Decimal        @db.Decimal(30, 15)
-  ownerId      String? // atanan satış temsilcisi
-  // v2.1: Deal artık Contact/Company'ye bağlanır (nullable — kademeli geçiş).
+  ownerId      String? // commercial assigné
+  // v2.1 : Deal est désormais lié à Contact/Company (nullable — migration progressive).
   contactId    String?
   companyId    String?
   customFields Json?
@@ -141,7 +141,7 @@ model Deal {
   invoices     Invoice[]
   quotes       Quote[]
   saleLineItems SaleLineItem[]
-  // Faz 6 multi-tenancy: nullable (kademeli geçiş). Bağlam aktifse otomatik atanır/filtrelenir.
+  // Phase 6 multi-tenant : nullable (migration progressive). Assigné/filtré automatiquement si le contexte est actif.
   tenantId     String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -196,7 +196,7 @@ enum InvoiceStatus {
 
 model Invoice {
   id            String            @id @default(uuid())
-  number        String?           @unique // INV-2026-000123 (issue'da atanır; sıralı, atlamasız)
+  number        String?           @unique // INV-2026-000123 (assigné à l'émission ; séquentiel, sans saut)
   dealId        String?
   customerName  String
   customerEmail String?
@@ -214,7 +214,7 @@ model Invoice {
   payments      Payment[]
   paymentIntents PaymentIntent[]
   createdById   String
-  tenantId      String? // Faz 6 multi-tenancy (nullable, kademeli geçiş)
+  tenantId      String? // Phase 6 multi-tenant (nullable, migration progressive)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -252,28 +252,28 @@ model Payment {
   @@index([invoiceId])
 }
 
-// Yıl bazlı sıralı fatura numarası sayacı (atlamasız üretim için).
+// Compteur annuel de numéros de facture séquentiels (production sans saut).
 model InvoiceCounter {
   year       Int @id
   lastNumber Int @default(0)
 }
 
-// v4.6 — Ödeme sağlayıcı (iyzico) checkout niyeti. token↔fatura eşlemesi + idempotency.
-// Callback İMZASIZ (tarayıcı redirect'i) → gövdeye güvenilmez; token ile sunucu-sunucu
-// "retrieve" doğrulaması yapılır, ancak SUCCESS ise durum pending→paid ATOMİK geçer ve
-// tek bir Payment kaydı düşer (çift callback = idempotent no-op).
+// v4.6 — Intention de paiement (iyzico). Correspondance token↔facture + idempotence.
+// Callback NON SIGNÉ (redirection navigateur) → le corps n'est pas fiable ; vérification
+// "retrieve" serveur-à-serveur avec le token ; si SUCCESS, le statut passe pending→paid de façon ATOMIQUE et
+// un seul enregistrement Payment est créé (double callback = no-op idempotent).
 model PaymentIntent {
   id             String   @id @default(uuid())
   tenantId       String?
   invoiceId      String
   provider       String   @default("iyzico")
-  token          String   @unique // iyzico checkout form token'ı
-  conversationId String   @unique // bizim ürettiğimiz benzersiz id (iyzico'ya echo edilir)
-  amount         Decimal  @db.Decimal(14, 2) // beklenen ödeme tutarı (kalan bakiye)
+  token          String   @unique // token du formulaire de paiement iyzico
+  conversationId String   @unique // identifiant unique que nous générons (renvoyé en écho à iyzico)
+  amount         Decimal  @db.Decimal(14, 2) // montant attendu du paiement (solde restant)
   currency       String   @default("EUR")
   status         String   @default("pending") // pending | paid | failed
   providerRef    String? // iyzico paymentId
-  createdById    String // niyeti başlatan kullanıcı → Payment.recordedById
+  createdById    String // utilisateur ayant initié l'intention → Payment.recordedById
   invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -291,7 +291,7 @@ model Product {
   description String?
   unitPrice   Decimal         @db.Decimal(14, 2)
   currency    String          @default("EUR")
-  taxRate     Decimal         @default(0) @db.Decimal(5, 2) // % varsayılan KDV
+  taxRate     Decimal         @default(0) @db.Decimal(5, 2) // % TVA par défaut
   active      Boolean         @default(true)
   tenantId    String?
   deletedAt   DateTime? // soft delete (hard delete yok)
@@ -316,7 +316,7 @@ enum QuoteStatus {
 
 model Quote {
   id                 String          @id @default(uuid())
-  number             String?         @unique // QUO-2026-000123 (send'de atanır)
+  number             String?         @unique // QUO-2026-000123 (assigné à l'envoi)
   dealId             String?
   customerName       String
   customerEmail      String?
@@ -327,7 +327,7 @@ model Quote {
   taxAmount          Decimal         @db.Decimal(14, 2)
   total              Decimal         @db.Decimal(14, 2)
   validUntil         DateTime?
-  convertedInvoiceId String?         @unique // dönüştürülen fatura (idempotency)
+  convertedInvoiceId String?         @unique // facture convertie (idempotence)
   deal               Deal?           @relation(fields: [dealId], references: [id])
   lineItems          QuoteLineItem[]
   createdById        String
@@ -355,13 +355,13 @@ model QuoteLineItem {
   @@index([productId])
 }
 
-// Yıl bazlı sıralı teklif numarası sayacı.
+// Compteur annuel de numéros de devis séquentiels.
 model QuoteCounter {
   year       Int @id
   lastNumber Int @default(0)
 }
 
-// ===== Faz 5 — Dış Entegrasyonlar =====
+// ===== Phase 5 — Intégrations externes =====
 
 enum DeliveryStatus {
   PENDING
@@ -374,7 +374,7 @@ model WebhookSubscription {
   id          String            @id @default(uuid())
   url         String
   events      String[] // ["deal.created","invoice.paid"]
-  secret      String // HMAC imza anahtarı (yalnız oluşturmada döner; sonra gizli)
+  secret      String // clé de signature HMAC (renvoyée uniquement à la création ; ensuite secrète)
   isActive    Boolean           @default(true)
   createdById String
   createdAt   DateTime          @default(now())
@@ -408,7 +408,7 @@ model EmailLog {
   createdAt DateTime @default(now())
 }
 
-// Gelen webhook idempotency anahtarları (tekrar işleme engeli).
+// Clés d'idempotence des webhooks entrants (empêche le retraitement).
 model ProcessedWebhook {
   key       String   @id // source + delivery id
   source    String
@@ -423,6 +423,31 @@ model Tenant {
   slug      String   @unique
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+}
+
+// ===== File d'attente e-mail persistante (Elysence / Atelier) =====
+// Souveraine : la logique (file, reprise, idempotence, journal) nous appartient.
+// Le transport reste interchangeable (simulated | smtp | api).
+model EmailOutbox {
+  id             String    @id @default(uuid())
+  tenantId       String? // séparation par projet/client (nullable, migration douce)
+  to             String
+  subject        String
+  template       String
+  context        Json
+  status         String    @default("PENDING") // PENDING, SENDING, SENT, SIMULATED, FAILED, DEAD
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(5)
+  lastError      String?
+  nextAttemptAt  DateTime  @default(now())
+  idempotencyKey String    @unique // empêche tout doublon (ex: reservationId + type)
+  driver         String? // transport réellement utilisé au dernier essai
+  sentAt         DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([tenantId])
 }
 
 // ===== v2.1 — Çekirdek CRM nesneleri: Company & Contact =====
@@ -463,7 +488,7 @@ model Contact {
   @@index([email])
 }
 
-// ===== v2.1c — Nitelenmemiş Lead (Contact+Deal'e dönüştürülür) =====
+// ===== v2.1c — Lead non qualifié (converti en Contact+Deal) =====
 
 enum LeadStatus {
   NEW
@@ -473,9 +498,9 @@ enum LeadStatus {
   CONVERTED
 }
 
-// Lead'in sisteme GİRİŞ kanalı (nasıl geldi) — serbest metin `source`'tan ayrı,
-// yapısal ve filtrelenebilir. MANUAL: panelden elle; IMPORT: CSV içe aktarma;
-// FORM: embed edilebilir lead formu; WEBHOOK: imzalı sunucu-sunucu webhook; API: doğrudan API.
+// Canal d'ENTRÉE du lead dans le système (comment il est arrivé) — distinct du texte libre `source`,
+// structuré et filtrable. MANUAL : saisie manuelle ; IMPORT : import CSV ;
+// FORM : formulaire intégrable ; WEBHOOK : webhook signé serveur-à-serveur ; API : API directe.
 enum LeadChannel {
   MANUAL
   IMPORT
@@ -492,8 +517,8 @@ model Lead {
   phone              String?
   companyName        String?
   source             String? // alt-kaynak (serbest): WEB, REFERRAL, EVENT, ...
-  channel            LeadChannel @default(MANUAL) // giriş kanalı (yapısal)
-  formId             String? // FORM kanalı için kaynak form
+  channel            LeadChannel @default(MANUAL) // canal d'entrée (structuré)
+  formId             String? // formulaire source pour le canal FORM
   meta               Json? // ham yük / ekstra alanlar (form-özel alanlar, webhook gövdesi)
   status             LeadStatus  @default(NEW)
   ownerId            String?
@@ -512,20 +537,20 @@ model Lead {
 }
 
 // ===== Lead Intake — Embed edilebilir form + gelen webhook =====
-// Embed form: 3. parti sitelere iframe/script ile gömülür; publicKey ile imzasız submit
-// (source-by-default public). Webhook: aynı form'un `secret`'ı ile HMAC imzalı sunucu-sunucu
-// ingest (docs/90 §webhook: imza doğrulanmadan DB yazımı YOK).
+// Formulaire embarqué : intégré à des sites tiers via iframe/script ; soumission non signée avec publicKey
+// (public par défaut). Webhook : ingestion serveur-à-serveur signée HMAC avec le `secret` du même formulaire
+// (docs/90 §webhook : AUCUNE écriture en base sans vérification de la signature).
 model LeadForm {
   id             String   @id @default(uuid())
   tenantId       String?
   name           String
-  publicKey      String   @unique // embed URL'inde + submit yolunda kullanılır (gizli değil)
-  secret         String // webhook HMAC imzası için (yalnız sunucu-sunucu; embed'e sızdırılmaz)
+  publicKey      String   @unique // utilisé dans l'URL d'embed et la soumission (non secret)
+  secret         String // pour la signature HMAC du webhook (serveur-à-serveur uniquement ; jamais exposé à l'embed)
   fields         Json     @default("[]") // [{ key, label, type, required }]
   buttonColor    String   @default("#4f46e5")
   buttonLabel    String   @default("Gönder")
   successMessage String?
-  redirectUrl    String? // submit sonrası yönlendirme (ops.)
+  redirectUrl    String? // redirection après soumission (option.)
   isActive       Boolean  @default(true)
   submitCount    Int      @default(0)
   createdAt      DateTime @default(now())
@@ -536,7 +561,7 @@ model LeadForm {
   @@index([tenantId])
 }
 
-// ===== v2.2 — Takvim / Toplantı =====
+// ===== v2.2 — Calendrier / Rendez-vous =====
 
 model Meeting {
   id        String   @id @default(uuid())
@@ -557,7 +582,7 @@ model Meeting {
   @@index([tenantId])
 }
 
-// ===== v2.3 — Otomasyon kuralları =====
+// ===== v2.3 — Règles d'automatisation =====
 
 model AutomationRule {
   id          String   @id @default(uuid())
@@ -606,9 +631,9 @@ model CustomFieldDef {
   @@index([entity])
 }
 
-// ===== v2.9 — Platform olgunluk (denetim kaydı) =====
+// ===== v2.9 — Maturité plateforme (journal d'audit) =====
 
-// Değişiklik yapan tüm istekler kaydedilir (append-only; hard delete yok).
+// Toutes les requêtes modifiantes sont enregistrées (append-only ; pas de suppression définitive).
 model AuditLog {
   id         String   @id @default(uuid())
   actorId    String?
@@ -626,22 +651,22 @@ model AuditLog {
   @@index([createdAt])
 }
 
-// ===== Marka (logo + uygulama adı) — panelden değiştirilebilir, tekil satır =====
+// ===== Marque (logo + nom d'application) — modifiable depuis le panneau, ligne unique =====
 model Branding {
   id        String   @id @default("singleton")
   appName   String?
-  logo      String?  @db.Text // data URL (image/svg+xml veya png) — boşsa varsayılan logo
+  logo      String?  @db.Text // data URL (image/svg+xml ou png) — logo par défaut si vide
   updatedAt DateTime @updatedAt
 }
 
-// ===== v3.0 — Entegrasyon bağlantıları (panelden bağlanır; sırlar AES-256-GCM şifreli) =====
+// ===== v3.0 — Connexions d'intégration (connectées depuis le panneau ; secrets chiffrés AES-256-GCM) =====
 model Connection {
   id         String   @id @default(uuid())
   tenantId   String?
   provider   String // 'whatsapp' | 'stripe' | 'quickbooks' | ...
   label      String?
   status     String   @default("connected") // connected | disabled
-  secretsEnc String?  @db.Text // AES-256-GCM şifreli JSON (sır alanları) — asla düz saklanmaz
+  secretsEnc String?  @db.Text // JSON chiffré AES-256-GCM (champs secrets) — jamais stocké en clair
   config     Json? // gizli olmayan meta (ör. phoneNumberId)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -650,16 +675,16 @@ model Connection {
   @@index([provider])
 }
 
-// ===== v3.1 — WhatsApp mesajları (gönderilen + gelen; lead/contact'a bağlanır) =====
+// ===== v3.1 — Messages WhatsApp (envoyés + reçus ; liés au lead/contact) =====
 model WhatsAppMessage {
   id        String   @id @default(uuid())
   tenantId  String?
   direction String // IN | OUT
-  phone     String // karşı tarafın numarası (E.164, + olmadan da olabilir)
+  phone     String // numéro du correspondant (E.164, le + est optionnel)
   body      String   @db.Text
   status    String   @default("sent") // sent | failed | received
   error     String?
-  waId      String? // sağlayıcı mesaj id'si (wamid...)
+  waId      String? // identifiant du message chez le fournisseur (wamid...)
   leadId    String?
   contactId String?
   createdAt DateTime @default(now())
@@ -675,7 +700,7 @@ model AccountingSync {
   id         String   @id @default(uuid())
   invoiceId  String   @unique
   provider   String // quickbooks | xero
-  externalId String? // sağlayıcıdaki fatura id'si
+  externalId String? // identifiant de facture chez le fournisseur
   status     String   @default("PENDING") // PENDING | SYNCED | FAILED
   error      String?
   attempts   Int      @default(0)
@@ -685,19 +710,19 @@ model AccountingSync {
   @@index([status])
 }
 
-// ===== v4.0 — Marka Radarı: kullanıcının kendi markaları + niş profili =====
+// ===== v4.0 — Radar de marques : marques propres de l'utilisateur + profil de niche =====
 model Brand {
   id             String   @id @default(uuid())
   tenantId       String?
   name           String
   sector         String? // örn: Giyim
-  niche          String? // normalize edilmiş niş, örn: "Erkek sokak giyimi"
+  niche          String? // niche normalisée, ex. : "mode urbaine homme"
   description    String?  @db.Text
   targetAudience String?
   priceBand      String? // budget | mid | premium | luxury
-  markets        Json     @default("[]") // ülke kodları: ["TR","DE"]
-  keywords       Json     @default("[]") // niş anahtar kelimeleri
-  answers        Json? // ham onboarding anket cevapları
+  markets        Json     @default("[]") // codes pays : ["FR","DE"]
+  keywords       Json     @default("[]") // mots-clés de la niche
+  answers        Json? // réponses brutes au questionnaire d'onboarding
   aiEnriched     Boolean  @default(false)
   createdById    String?
   createdAt      DateTime @default(now())
@@ -706,7 +731,7 @@ model Brand {
   @@index([tenantId])
 }
 
-// ===== v4.1 — Rakip kaydı (markaya bağlı; elle veya AI önerisi) =====
+// ===== v4.1 — Fiche concurrent (liée à la marque ; manuelle ou suggérée par IA) =====
 model Competitor {
   id        String   @id @default(uuid())
   tenantId  String?
@@ -723,7 +748,7 @@ model Competitor {
   @@index([tenantId])
 }
 
-// ===== v4.2 — Kaydedilen reklamlar (Meta Ad Library radarından yıldızlananlar) =====
+// ===== v4.2 — Publicités enregistrées (mises en favori depuis le radar Meta Ad Library) =====
 model SavedAd {
   id          String   @id @default(uuid())
   tenantId    String?
@@ -741,7 +766,7 @@ model SavedAd {
   @@index([tenantId])
 }
 
-// ===== v4.4 — Rakip ürün & fiyat takibi (CSV/elle; fiyat geçmişi) =====
+// ===== v4.4 — Suivi produits & prix concurrents (CSV/manuel ; historique des prix) =====
 model CompetitorProduct {
   id        String       @id @default(uuid())
   tenantId  String?
