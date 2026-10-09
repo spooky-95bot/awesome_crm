@@ -21,8 +21,8 @@ describe('MailService', () => {
     );
   });
 
-  // U-5.6 — provider.send doğru context ile çağrılır + EmailLog SIMULATED
-  it('provider.send çağrılır ve EmailLog SIMULATED yazılır', async () => {
+  // U-5.6 — provider.send est appelé avec le bon contexte + EmailLog SIMULATED
+  it('provider.send est appelé et EmailLog écrit SIMULATED', async () => {
     await service.send({
       to: 'a@b.com',
       subject: 'Merhaba',
@@ -39,8 +39,8 @@ describe('MailService', () => {
     );
   });
 
-  // S-5.2 — mail header injection (CRLF) reddedilir
-  it('to alanında CRLF → BadRequest, gönderim yok', async () => {
+  // S-5.2 — injection d'en-tête mail (CRLF) refusée
+  it('CRLF dans le champ to → BadRequest, aucun envoi', async () => {
     await expect(
       service.send({
         to: 'a@b.com\r\nBcc: evil@x.com',
@@ -52,7 +52,7 @@ describe('MailService', () => {
     expect(provider.send).not.toHaveBeenCalled();
   });
 
-  it('subject alanında CRLF → BadRequest', async () => {
+  it('CRLF dans le champ subject → BadRequest', async () => {
     await expect(
       service.send({
         to: 'a@b.com',
