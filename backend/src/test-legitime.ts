@@ -1,1 +1,0 @@
-// Test: fichier français légitime
