@@ -1,6 +1,6 @@
 // src/modules/lead-forms/lead-forms.service.ts
-// İŞ MANTIĞI: Lead intake formu CRUD + public submit (imzasız) + webhook ingest (HMAC zorunlu).
-// docs/90 §webhook: imza DOĞRULANMADAN hiçbir DB yazımı yapılmaz (webhook yolunda).
+// LOGIQUE MÉTIER : CRUD formulaires de collecte de leads + soumission publique (non signée) + ingestion webhook (HMAC obligatoire).
+// docs/90 §webhook : AUCUNE écriture en base sans vérification de la signature (chemin webhook).
 import {
   BadRequestException,
   ForbiddenException,
@@ -23,7 +23,7 @@ import {
   UpdateLeadFormDto,
 } from './dto/lead-form.dto';
 
-// Bilinen lead alanları (gerisi meta'ya yazılır).
+// Champs de lead connus (le reste est écrit dans meta).
 const KNOWN_KEYS = new Set([
   'firstName',
   'lastName',
@@ -34,7 +34,7 @@ const KNOWN_KEYS = new Set([
   'source',
 ]);
 
-// Form alanı tanımı (JSON'dan). Ayarlar v4.7'de eklendi.
+// Définition des champs de formulaire (JSON). Paramètres ajoutés en v4.7.
 interface FormField {
   key: string;
   label?: string;
@@ -52,7 +52,7 @@ interface FormField {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const E164_RE = /^\+[1-9]\d{6,14}$/; // uluslararası telefon (E.164)
+const E164_RE = /^\+[1-9]\d{6,14}$/; // téléphone international (E.164)
 
 @Injectable()
 export class LeadFormsService {
@@ -77,7 +77,7 @@ export class LeadFormsService {
       successMessage: dto.successMessage,
       redirectUrl: this.normalizeUrl(dto.redirectUrl),
     });
-    // Oluşturmada secret bir kez döner (kurulum için).
+    // À la création, le secret est retourné une fois (pour l'installation).
     return this.toAdmin(form, true);
   }
 
@@ -97,7 +97,7 @@ export class LeadFormsService {
     return this.toAdmin(form, false);
   }
 
-  // Secret yalnız MANAGE yetkisiyle açıkça istenince döner.
+  // Le secret n'est retourné que sur demande explicite avec la permission MANAGE.
   async revealSecret(id: string) {
     const form = await this.repo.findById(id);
     if (!form) throw new NotFoundException('Formulaire introuvable');
@@ -148,14 +148,14 @@ export class LeadFormsService {
     };
   }
 
-  // ---- Public: form submit (imzasız; tarayıcıdan) → FORM kanalı ----
+  // ---- Public : soumission de formulaire (non signée ; navigateur) → canal FORM ----
 
   async submit(publicKey: string, payload: IntakePayloadDto) {
     const form = await this.repo.findByPublicKey(publicKey);
     if (!form) throw new NotFoundException('Formulaire introuvable');
     if (!form.isActive) throw new GoneException('Formulaire inactif');
 
-    // Sunucu-taraflı alan doğrulaması (istemci kontrolü atlanabilir → secure by default).
+    // Validation des champs côté serveur (le contrôle client est contournable → sécurisé par défaut).
     this.validateSubmission(form.fields as unknown as FormField[], payload);
 
     const lead = await this.ingest(payload, LeadChannel.FORM, form);
@@ -167,7 +167,7 @@ export class LeadFormsService {
     };
   }
 
-  // ---- Public: webhook ingest (HMAC zorunlu; sunucu-sunucu) → WEBHOOK kanalı ----
+  // ---- Public : ingestion webhook (HMAC obligatoire ; serveur à serveur) → canal WEBHOOK ----
 
   async ingestWebhook(params: {
     publicKey: string;
@@ -178,7 +178,7 @@ export class LeadFormsService {
     const form = await this.repo.findByPublicKey(params.publicKey);
     if (!form) throw new NotFoundException('Formulaire introuvable');
 
-    // KURAL: imza doğrulanmadan parse/DB yok.
+    // RÈGLE : sans signature vérifiée, aucun parse/DB.
     const ts = Number(params.timestamp);
     if (!params.signature || !params.timestamp || Number.isNaN(ts)) {
       throw new UnauthorizedException('En-tête signature/timestamp manquant');
@@ -202,8 +202,8 @@ export class LeadFormsService {
     return { success: true, leadId: lead.id };
   }
 
-  // Form alanı ayarlarına göre gövdeyi doğrular. İlk hatada özel mesajla 400 fırlatır.
-  // İstemci doğrulaması güvenlik sınırı değildir; asıl kontrol burada.
+  // Valide le corps selon la configuration des champs. Premier échec → 400 avec message spécifique.
+  // La validation client n'est pas la limite de sécurité ; le vrai contrôle est ici.
   private validateSubmission(
     fields: FormField[],
     payload: Record<string, unknown>,
@@ -220,42 +220,42 @@ export class LeadFormsService {
 
       if (value === '') {
         if (f.required) fail(`${label} zorunludur.`);
-        continue; // boş + opsiyonel → diğer kontrolleri atla
+        continue; // vide + optionnel → ignorer les autres contrôles
       }
 
       const type = f.type ?? 'text';
       if (type === 'email' && !EMAIL_RE.test(value)) {
-        fail(`${label} geçerli bir e-posta olmalı.`);
+        fail(`${label} doit être un e-mail valide.`);
       }
       if (type === 'phone' && !E164_RE.test(value)) {
-        fail(`${label} geçerli bir uluslararası telefon olmalı (+90…).`);
+        fail(`${label} doit être un téléphone international valide (+90…).`);
       }
       if (type === 'number') {
         const n = Number(value);
-        if (!Number.isFinite(n)) fail(`${label} sayı olmalı.`);
-        if (f.min != null && n < f.min) fail(`${label} en az ${f.min} olmalı.`);
+        if (!Number.isFinite(n)) fail(`${label} doit être un nombre.`);
+        if (f.min != null && n < f.min) fail(`${label} doit être ≥ ${f.min}.`);
         if (f.max != null && n > f.max)
-          fail(`${label} en fazla ${f.max} olmalı.`);
+          fail(`${label} doit être ≤ ${f.max}.`);
       }
       if (f.minLength != null && value.length < f.minLength) {
-        fail(`${label} en az ${f.minLength} karakter olmalı.`);
+        fail(`${label} doit avoir ≥ ${f.minLength} caractères.`);
       }
       if (f.maxLength != null && value.length > f.maxLength) {
-        fail(`${label} en fazla ${f.maxLength} karakter olmalı.`);
+        fail(`${label} doit avoir ≤ ${f.maxLength} caractères.`);
       }
       if (f.pattern) {
         try {
           if (!new RegExp(f.pattern).test(value)) {
-            fail(`${label} istenen biçimde değil.`);
+            fail(`${label} n'est pas au format demandé.`);
           }
         } catch {
-          // Geçersiz regex → alan doğrulaması atlanır (form kaydını engellemez).
+          // Regex invalide → validation du champ ignorée (ne bloque pas l'enregistrement du formulaire).
         }
       }
     }
   }
 
-  // ---- Ortak: payload → lead (ad ayrıştırma + meta) ----
+  // ---- Commun : payload → lead (séparation nom + meta) ----
 
   private async ingest(
     payload: IntakePayloadDto,
@@ -263,7 +263,7 @@ export class LeadFormsService {
     form: { id: string; name: string; tenantId: string | null },
   ) {
     const { firstName, lastName } = this.splitName(payload);
-    // Ekstra (bilinmeyen) alanlar meta'ya; ham gövde de saklanır.
+    // Champs extra (inconnus) → meta ; le corps brut est aussi conservé.
     const extra: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(payload)) {
       if (!KNOWN_KEYS.has(k)) extra[k] = v;
@@ -287,7 +287,7 @@ export class LeadFormsService {
     return lead;
   }
 
-  // 'name' tek alanı verilmişse ad/soyad'a böl; yoksa firstName/lastName kullan.
+  // Si un champ unique 'name' est fourni, le séparer en prénom/nom ; sinon utiliser firstName/lastName.
   private splitName(p: IntakePayloadDto): {
     firstName: string;
     lastName: string;
@@ -311,8 +311,8 @@ export class LeadFormsService {
     return `${prefix}_${randomBytes(24).toString('base64url')}`;
   }
 
-  // redirectUrl'i mutlak yap: şema yoksa https:// ekle. Aksi halde tarayıcı "google.com"u
-  // göreli sayar → embed başka bir forma yönlenir (kırık). Boş → undefined.
+  // Rendre redirectUrl absolu : ajouter https:// si absent. Sinon le navigateur traiterait "google.com"
+  // comme relatif → l'embed redirigerait vers un autre formulaire (cassé). Vide → undefined.
   private normalizeUrl(url?: string): string | undefined {
     const v = (url ?? '').trim();
     if (!v) return undefined;
@@ -325,11 +325,11 @@ export class LeadFormsService {
       { key: 'lastName', label: 'Soyad', type: 'text', required: true },
       { key: 'email', label: 'E-posta', type: 'email', required: true },
       { key: 'phone', label: 'Telefon', type: 'tel', required: false },
-      { key: 'companyName', label: 'Şirket', type: 'text', required: false },
+      { key: 'companyName', label: 'Société', type: 'text', required: false },
     ];
   }
 
-  // Admin yanıtı: secret yalnız `withSecret` ise (oluşturma anı) eklenir.
+  // Réponse admin : le secret n'est ajouté que si `withSecret` (moment de la création).
   private toAdmin(
     form: {
       id: string;
