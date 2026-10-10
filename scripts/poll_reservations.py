@@ -63,6 +63,8 @@ def send_to_crm(reservation: dict) -> bool:
         "phone": reservation.get("phone", ""),
         "service": reservation.get("service", ""),
         "message": reservation.get("message", ""),
+        "date": reservation.get("date", ""),
+        "timeSlot": reservation.get("timeSlot", ""),
     }
     data = json.dumps(payload).encode()
     req = urllib.request.Request(
