@@ -1,5 +1,5 @@
 // src/modules/leads/leads.service.ts
-// İŞ MANTIĞI: nitelenmemiş Lead CRUD + Contact/Deal'e dönüştürme.
+// LOGIQUE MÉTIER : Lead CRUD + conversion Contact/Deal.
 import {
   BadRequestException,
   ConflictException,
@@ -18,7 +18,7 @@ import {
   UpdateLeadDto,
 } from './dto/lead.dto';
 
-// Form/webhook/CSV gibi katmanların kanal bilgisiyle lead açması için ortak girdi.
+// Entrée commune pour les couches qui créent un lead avec info de canal (form/webhook/CSV).
 export interface IntakeLeadInput {
   firstName: string;
   lastName: string;
@@ -43,7 +43,7 @@ export class LeadsService {
   ) {}
 
   async create(dto: CreateLeadDto, actor: AuthenticatedUser) {
-    // Panelden elle oluşturma → MANUAL kanal.
+    // Création manuelle via le panneau → canal MANUAL.
     const lead = await this.repo.create({
       ...dto,
       channel: LeadChannel.MANUAL,
@@ -53,8 +53,8 @@ export class LeadsService {
     return lead;
   }
 
-  // Form/webhook/CSV kanallarından kaynak bilgisiyle lead açar (aktör yok).
-  // tenantId açıkça verilir (public yolda tenant context null'dır).
+  // Crée un lead depuis les canaux form/webhook/CSV avec info source (aucun acteur).
+  // tenantId passé explicitement (dans le chemin public, le contexte tenant est null).
   async createFromIntake(input: IntakeLeadInput) {
     const data: Prisma.LeadCreateInput = {
       firstName: input.firstName,
@@ -77,7 +77,7 @@ export class LeadsService {
     return lead;
   }
 
-  // Otomasyon/webhook tetikleyicileri için domain olayı (örn. WhatsApp karşılama).
+  // Événement de domaine pour les déclencheurs automation/webhook (ex : accueil WhatsApp).
   private emitCreated(lead: {
     id: string;
     firstName: string;
@@ -87,6 +87,7 @@ export class LeadsService {
     companyName: string | null;
     channel: LeadChannel;
     source: string | null;
+    meta: Prisma.InputJsonValue | null;
   }) {
     this.events.emit('lead.created', {
       leadId: lead.id,
@@ -97,6 +98,7 @@ export class LeadsService {
       companyName: lead.companyName,
       channel: lead.channel,
       source: lead.source,
+      meta: lead.meta ?? null,
     });
   }
 
@@ -129,13 +131,30 @@ export class LeadsService {
     if (lead.status === LeadStatus.CONVERTED) {
       throw new ConflictException('Une demande convertie ne peut pas être modifiée.');
     }
-    // CONVERTED yalnız convert akışıyla atanır.
+    // CONVERTED est uniquement attribué par le flux de conversion.
     if (dto.status === LeadStatus.CONVERTED) {
       throw new BadRequestException(
-        'CONVERTED durumu yalnız dönüştürme ile atanır (POST /:id/convert).',
+        'Le statut CONVERTED est uniquement attribué par la conversion (POST /:id/convert).',
       );
     }
-    return this.repo.update(id, dto);
+    const updated = await this.repo.update(id, dto);
+    // Événement de changement de statut (déclencheurs automation/webhook).
+    if (dto.status && dto.status !== lead.status) {
+      this.events.emit('lead.status_changed', {
+        leadId: updated.id,
+        previousStatus: lead.status,
+        newStatus: updated.status,
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        email: updated.email,
+        phone: updated.phone,
+        companyName: updated.companyName,
+        channel: updated.channel,
+        source: updated.source,
+        meta: updated.meta ?? null,
+      });
+    }
+    return updated;
   }
 
   async remove(id: string) {
@@ -158,7 +177,7 @@ export class LeadsService {
     }
     if ('noPipeline' in result) {
       throw new BadRequestException(
-        'Varsayılan pipeline bulunamadı (dönüştürme yapılamıyor).',
+        'Aucun pipeline par défaut trouvé (conversion impossible).',
       );
     }
     this.logger.log(

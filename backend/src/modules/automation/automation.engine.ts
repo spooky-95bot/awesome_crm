@@ -1,5 +1,5 @@
 // src/modules/automation/automation.engine.ts
-// Domain olaylarını dinler → eşleşen otomasyon kurallarını çalıştırır (gevşek bağlılık).
+// Écoute les événements de domaine → exécute les règles d'automatisation correspondantes (couplage faible).
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AutomationRepository } from './automation.repository';
@@ -18,7 +18,7 @@ interface Action {
   to?: string;
 }
 
-// Saf: koşul payload ile eşleşiyor mu? (koşulsuz kural her zaman eşleşir)
+// Pur : la condition correspond-elle au payload ? (une règle sans condition correspond toujours)
 export function evaluateConditions(
   conditions: Condition | null | undefined,
   payload: Payload,
@@ -27,7 +27,7 @@ export function evaluateConditions(
   return String(payload[conditions.field]) === String(conditions.equals);
 }
 
-// Saf: "{{alan}}" yer tutucularını payload değerleriyle doldur (whatsapp/e-posta gövdesi).
+// Pur : remplace les placeholders "{{champ}}" par les valeurs du payload (corps whatsapp/e-mail).
 export function interpolate(templateText: string, payload: Payload): string {
   return templateText.replace(/\{\{(\w+)\}\}/g, (_, key: string) =>
     payload[key] === undefined || payload[key] === null
@@ -76,7 +76,7 @@ export class AutomationEngine {
       for (const action of actions) {
         await this.execute(action, payload).catch((err) =>
           this.logger.warn(
-            `kural ${rule.id} aksiyon ${action.type} hatası: ${
+            ` règle ${rule.id} action ${action.type} erreur: ${
               err instanceof Error ? err.message : err
             }`,
           ),
@@ -105,7 +105,7 @@ export class AutomationEngine {
         return;
       }
       case 'send_whatsapp': {
-        // Alıcı: sabit numara (action.to) yoksa payload'daki telefon (örn. lead.created).
+        // Destinataire : numéro fixe (action.to) ou téléphone du payload (ex : lead.created).
         const to = action.to || (payload.phone as string | undefined);
         if (to && action.note) {
           await this.whatsapp.send({

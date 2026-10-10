@@ -12,7 +12,21 @@ import urllib.error
 from pathlib import Path
 
 # Configuration
-SITE_URL = "https://elysence-premiere.pages.dev"
+# SITE_URL est lu depuis la variable d'environnement SITE_URL ou le fichier site-config.json
+# (à la racine du projet Elysence). Valeur par défaut : URL actuelle pages.dev.
+def _load_site_url() -> str:
+    import os
+    env_url = os.environ.get("SITE_URL")
+    if env_url:
+        return env_url.rstrip("/")
+    config_path = "/home/ubuntu/atelier-runtime/projects/elysence-premiere/site-config.json"
+    try:
+        with open(config_path) as f:
+            return json.load(f)["siteUrl"].rstrip("/")
+    except Exception:
+        return "https://elysence-premiere.pages.dev"
+
+SITE_URL = _load_site_url()
 POLL_URL = f"{SITE_URL}/api/reservations"
 MARK_URL = f"{SITE_URL}/api/reservations/mark"
 CRM_URL = "http://127.0.0.1:3100/api/v1/public/lead-forms/pk_uzqC4YKDXrthKtFx2pkkGjBML637HJka/submit"
