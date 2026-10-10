@@ -1,6 +1,6 @@
 // src/modules/integrations/util/webhook-signature.util.ts
 // HMAC-SHA256 imza: imza = HMAC(secret, `${timestamp}.${body}`) → "sha256=<hex>".
-// Doğrulama sabit zamanlı (timingSafeEqual) + timestamp penceresi (replay engeli).
+// Validation à temps constant (timingSafeEqual) + fenêtre temporelle (anti-rejeu).
 import { createHmac, timingSafeEqual } from 'crypto';
 
 export const DEFAULT_TOLERANCE_SEC = 300; // ±5 dk
@@ -25,7 +25,7 @@ export function verifySignature(params: {
   toleranceSec?: number;
 }): boolean {
   const tolerance = params.toleranceSec ?? DEFAULT_TOLERANCE_SEC;
-  // Replay engeli: timestamp penceresi dışındaysa reddet.
+  // Anti-rejeu : si le timestamp est hors de la fenêtre, rejeter.
   if (Math.abs(params.nowSec - params.timestamp) > tolerance) {
     return false;
   }

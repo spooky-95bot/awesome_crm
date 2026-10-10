@@ -30,13 +30,13 @@ describe('WebhookDispatcherService', () => {
     );
   });
 
-  // E-5.4 — başarılı teslimat + imza doğrulanabilir
-  it('2xx → SUCCESS ve gönderilen imza doğrulanabilir', async () => {
+  // E-5.4 — livraison réussie + signature vérifiable
+  it('2xx → SUCCESS et la signature envoyée est vérifiable', async () => {
     http.post.mockResolvedValue({ status: 200 });
     const res = await dispatcher.dispatch(sub, 'invoice.paid', { id: 'inv-1' });
 
     expect(res.status).toBe(DeliveryStatus.SUCCESS);
-    // http.post(url, body, headers, timeout) — imzayı header'dan doğrula
+    // http.post(url, body, headers, timeout) — vérifier la signature depuis le header
     const [url, body, headers] = http.post.mock.calls[0];
     expect(url).toBe(sub.url);
     const ts = Number(headers['X-CRM-Timestamp']);
@@ -53,8 +53,8 @@ describe('WebhookDispatcherService', () => {
     expect(headers['X-CRM-Delivery']).toBe('del-1');
   });
 
-  // E-5.5 — alıcı 500 → FAILED + retry planlanır
-  it('5xx → FAILED ve nextRetryAt planlanır', async () => {
+  // E-5.5 — destinataire 500 → FAILED + nouvelle tentative planifiée
+  it('5xx → FAILED et nextRetryAt planifié', async () => {
     http.post.mockResolvedValue({ status: 500 });
     const res = await dispatcher.dispatch(sub, 'invoice.paid', { id: 'x' });
     expect(res.status).toBe(DeliveryStatus.FAILED);
@@ -63,7 +63,7 @@ describe('WebhookDispatcherService', () => {
   });
 
   // C-5.1 — timeout/throw → FAILED (sistem bloklanmaz)
-  it('network/timeout hatası → FAILED', async () => {
+  it('erreur réseau/timeout → FAILED', async () => {
     http.post.mockRejectedValue(new Error('aborted'));
     const res = await dispatcher.dispatch(sub, 'deal.created', { id: 'x' });
     expect(res.status).toBe(DeliveryStatus.FAILED);

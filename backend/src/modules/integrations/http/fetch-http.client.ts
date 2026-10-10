@@ -1,5 +1,5 @@
 // src/modules/integrations/http/fetch-http.client.ts
-// Global fetch + AbortController ile timeout'lu POST (yavaş alıcı sistemi bloklamaz).
+// Global fetch + AbortController avec timeout (un récepteur lent ne bloque pas le système).
 import { Injectable } from '@nestjs/common';
 import { HttpResponse, IHttpClient } from './http-client.interface';
 

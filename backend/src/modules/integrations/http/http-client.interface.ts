@@ -1,5 +1,5 @@
 // src/modules/integrations/http/http-client.interface.ts
-// Giden HTTP soyutlaması (test edilebilirlik + DIP).
+// Abstraction HTTP sortante (testabilité + DIP).
 export const HTTP_CLIENT = Symbol('HTTP_CLIENT');
 
 export interface HttpResponse {

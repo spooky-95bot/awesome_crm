@@ -4,7 +4,7 @@ import { ArrayNotEmpty, IsArray, IsIn, IsString } from 'class-validator';
 import { SUPPORTED_EVENTS } from '../integration-events';
 
 export class CreateWebhookDto {
-  // Yalnız HTTPS (SSRF + transport güvenliği Service'te de doğrulanır).
+  // HTTPS uniquement (SSRF + sécurité transport validés dans Service).
   @ApiProperty({ example: 'https://example.com/webhooks/crm' })
   @IsString()
   url: string;

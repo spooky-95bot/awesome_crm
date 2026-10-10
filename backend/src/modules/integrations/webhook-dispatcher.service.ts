@@ -1,5 +1,5 @@
 // src/modules/integrations/webhook-dispatcher.service.ts
-// Giden teslimat: imzala → POST → WebhookDelivery kaydı (SUCCESS/FAILED+backoff/DEAD).
+// Livraison sortante : signature → POST → enregistrement WebhookDelivery (SUCCESS/FAILED+backoff/DEAD).
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DeliveryStatus, Prisma } from '@prisma/client';
 import { IntegrationsRepository } from './integrations.repository';
@@ -24,7 +24,7 @@ export class WebhookDispatcherService {
     @Inject(HTTP_CLIENT) private readonly http: IHttpClient,
   ) {}
 
-  // Tek abonelik için bir olayı teslim etmeyi dener; delivery kaydı döner.
+  // Tente de livrer un événement à un seul abonnement ; renvoie l'enregistrement de livraison.
   async dispatch(
     sub: Subscription,
     event: string,
@@ -48,7 +48,7 @@ export class WebhookDispatcherService {
       'X-CRM-Event': event,
       'X-CRM-Timestamp': String(timestamp),
       'X-CRM-Signature': signature,
-      'X-CRM-Delivery': delivery.id, // idempotency anahtarı
+      'X-CRM-Delivery': delivery.id, // clé d'idempotence
     };
 
     try {
@@ -70,8 +70,8 @@ export class WebhookDispatcherService {
     }
   }
 
-  // Süresi gelmiş FAILED teslimatları yeniden dener. (Bir cron/worker bunu çağırır —
-  // PRAGMATİK SINIR: zamanlanmış worker bu fazda kurulmadı; metot hazır ve test edilir.)
+  // Relance les livraisons FAILED échues. (Un cron/worker appelle ceci —
+  // LIMITE PRAGMATIQUE : le worker planifié n'est pas encore installé à cette étape ; la méthode est prête et testée.)
   async processDuePending(nowMs: number = Date.now()): Promise<number> {
     const due = await this.repo.findDueDeliveries(new Date(nowMs));
     for (const d of due) {

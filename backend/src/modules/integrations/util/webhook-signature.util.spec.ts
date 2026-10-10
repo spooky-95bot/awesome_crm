@@ -14,7 +14,7 @@ describe('webhook signature', () => {
     expect(a).toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
-  it('verify doğru imzayı kabul eder', () => {
+  it('verify accepte une signature correcte', () => {
     const sig = signPayload(secret, ts, body);
     expect(
       verifySignature({
@@ -27,8 +27,8 @@ describe('webhook signature', () => {
     ).toBe(true);
   });
 
-  // U-5.2 — yanlış imza
-  it('verify yanlış imzayı reddeder', () => {
+  // U-5.2 — signature incorrecte
+  it('verify rejette une signature incorrecte', () => {
     expect(
       verifySignature({
         secret,
@@ -40,7 +40,7 @@ describe('webhook signature', () => {
     ).toBe(false);
   });
 
-  it('verify yanlış secret ile reddeder', () => {
+  it('verify rejette un secret incorrect', () => {
     const sig = signPayload(secret, ts, body);
     expect(
       verifySignature({
@@ -54,7 +54,7 @@ describe('webhook signature', () => {
   });
 
   // U-5.3 — eski timestamp (replay)
-  it("verify pencere dışı timestamp'i reddeder (replay)", () => {
+  it("verify rejette un timestamp hors fenêtre (rejeu)", () => {
     const sig = signPayload(secret, ts, body);
     expect(
       verifySignature({
@@ -62,7 +62,7 @@ describe('webhook signature', () => {
         timestamp: ts,
         body,
         signature: sig,
-        nowSec: ts + 10_000, // tolerans çok aşıldı
+        nowSec: ts + 10_000, // tolérance dépassée
       }),
     ).toBe(false);
   });

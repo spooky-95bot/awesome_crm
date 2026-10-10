@@ -1,5 +1,5 @@
 // src/modules/integrations/integrations.service.ts
-// İŞ MANTIĞI: webhook abonelik yönetimi, SSRF kontrolü, gelen webhook doğrulama.
+// LOGIQUE MÉTIER : gestion des abonnements webhook, contrôle SSRF, validation des webhooks entrants.
 import {
   BadRequestException,
   Injectable,
@@ -34,18 +34,18 @@ export class IntegrationsService {
     private readonly dispatcher: WebhookDispatcherService,
     private readonly config: ConfigService,
   ) {
-    // Test/self-host: özel ağ + http webhook'a izin (varsayılan kapalı).
+    // Test/auto-hébergement : réseau privé + webhook http autorisé (désactivé par défaut).
     this.allowPrivate = config.get<boolean>('WEBHOOK_ALLOW_PRIVATE', false);
   }
 
   async createWebhook(dto: CreateWebhookDto, actor: AuthenticatedUser) {
-    // SSRF + HTTPS zorunluluğu.
+    // Obligation SSRF + HTTPS.
     if (!isSafeWebhookUrl(dto.url, { allowPrivate: this.allowPrivate })) {
       throw new BadRequestException(
-        'Geçersiz webhook URL (yalnız HTTPS, iç/özel adresler yasak).',
+        'URL webhook invalide (HTTPS uniquement, adresses internes/privées interdites).',
       );
     }
-    // Secret sunucuda üretilir; istemciden alınmaz.
+    // Le secret est généré côté serveur ; jamais fourni par le client.
     const secret = randomBytes(32).toString('hex');
     const sub = await this.repo.createSubscription({
       url: dto.url,
@@ -83,7 +83,7 @@ export class IntegrationsService {
     return this.repo.listDeliveries(id);
   }
 
-  // Gelen webhook: imza zorunlu (yetki imzayla). İmzasız/yanlış → 401.
+  // Webhook entrant : signature obligatoire (autorisation par signature). Absente/fausse → 401.
   async handleInbound(params: {
     source: string;
     rawBody: string;
@@ -109,7 +109,7 @@ export class IntegrationsService {
       throw new UnauthorizedException('Signature invalide.');
     }
 
-    // Idempotency: aynı delivery daha önce işlendiyse tekrar işleme yok.
+  // Idempotence : si la même livraison a déjà été traitée, pas de double traitement.
     const key = `${params.source}:${params.deliveryId ?? params.signature}`;
     const seen = await this.repo.findProcessed(key);
     if (seen) {
@@ -120,7 +120,7 @@ export class IntegrationsService {
     return { received: true, duplicate: false };
   }
 
-  // --- Yardımcılar ---
+  // --- Assistants ---
 
   private async getSubOrThrow(id: string) {
     const sub = await this.repo.findSubscriptionById(id);

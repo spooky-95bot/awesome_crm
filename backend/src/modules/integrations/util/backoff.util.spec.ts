@@ -8,7 +8,7 @@ import {
 describe('computeNextRetry (U-5.4)', () => {
   const now = 1_000_000_000;
 
-  it('ilk başarısızlıkta ilk backoff (60s)', () => {
+  it('premier échec → premier backoff (60s)', () => {
     const next = computeNextRetry(1, now);
     expect(next).not.toBeNull();
     expect((next as Date).getTime()).toBe(now + BACKOFF_SCHEDULE_SEC[1] * 1000);

@@ -1,6 +1,6 @@
 // src/modules/integrations/webhook-event.handler.ts
-// Domain olaylarını dinler → eşleşen aboneliklere imzalı teslimat tetikler.
-// İş servisleri HTTP'yi bilmez; yalnız olay yayar (gevşek bağlılık).
+// Écoute les événements de domaine → déclenche une livraison signée vers les abonnements correspondants.
+// Les services métier ne connaissent pas HTTP ; ils publient seulement des événements (couplage faible).
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationsRepository } from './integrations.repository';

@@ -1,13 +1,13 @@
 // src/modules/integrations/util/ssrf.util.ts
-// SSRF engeli: webhook hedef URL'i yalnız HTTPS + dış (public) host olmalı.
-// İç/özel IP'lere (loopback, link-local, private ranges, metadata) POST yasak.
+// Protection SSRF : l'URL cible du webhook doit être HTTPS + un hôte externe (public).
+// POST interdit vers les IP internes/privées (loopback, link-local, plages privées, metadata).
 //
-// PRAGMATİK SINIR: hostname → IP DNS çözümü (DNS rebinding kontrolü) burada yapılmaz;
-// IP literal'leri ve bilinen iç host adları engellenir. Tam çözüm runtime'da dispatch
+// LIMITE PRAGMATIQUE : la résolution hostname → IP (contrôle DNS rebinding) n'est pas faite ici ;
+// les IP littérales et les noms d'hôte internes connus sont bloqués. La solution complète serait un dispatch
 // öncesi DNS lookup + IP kontrolü gerektirir (ileride eklenebilir).
 
 export interface SsrfOptions {
-  // Test/self-host: özel ağ + http'ye izin ver (varsayılan kapalı).
+  // Test/auto-hébergement : réseau privé + http autorisé (désactivé par défaut).
   allowPrivate?: boolean;
 }
 
@@ -51,11 +51,11 @@ export function isSafeWebhookUrl(url: string, opts: SsrfOptions = {}): boolean {
   if (opts.allowPrivate) {
     return parsed.protocol === 'http:' || parsed.protocol === 'https:';
   }
-  // Yalnız HTTPS.
+  // HTTPS uniquement.
   if (parsed.protocol !== 'https:') {
     return false;
   }
-  // İç/özel host engeli.
+  // Blocage des hôtes internes/privés.
   if (isPrivateHost(parsed.hostname)) {
     return false;
   }

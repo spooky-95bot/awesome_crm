@@ -11,6 +11,7 @@ import { MailOutboxController } from './mail/mail-outbox.controller';
 import { MAIL_PROVIDER } from './mail/mail-provider.interface';
 import { SimulatedMailProvider } from './mail/providers/simulated-mail.provider';
 import { SmtpMailProvider } from './mail/providers/smtp-mail.provider';
+import { ResendMailProvider } from './mail/providers/resend-mail.provider';
 import { HTTP_CLIENT } from './http/http-client.interface';
 import { FetchHttpClient } from './http/fetch-http.client';
 
@@ -24,15 +25,22 @@ import { FetchHttpClient } from './http/fetch-http.client';
     MailService,
     SimulatedMailProvider,
     SmtpMailProvider,
-    // Sélection du fournisseur via MAIL_DRIVER (simulated | smtp).
+    ResendMailProvider,
+    // Sélection du fournisseur via MAIL_DRIVER (simulated | smtp | resend).
     {
       provide: MAIL_PROVIDER,
-      inject: [ConfigService, SimulatedMailProvider, SmtpMailProvider],
+      inject: [ConfigService, SimulatedMailProvider, SmtpMailProvider, ResendMailProvider],
       useFactory: (
         config: ConfigService,
         sim: SimulatedMailProvider,
         smtp: SmtpMailProvider,
-      ) => (config.get<string>('MAIL_DRIVER') === 'smtp' ? smtp : sim),
+        resend: ResendMailProvider,
+      ) => {
+        const driver = config.get<string>('MAIL_DRIVER') ?? 'simulated';
+        if (driver === 'smtp') return smtp;
+        if (driver === 'resend') return resend;
+        return sim;
+      },
     },
     { provide: HTTP_CLIENT, useClass: FetchHttpClient },
   ],

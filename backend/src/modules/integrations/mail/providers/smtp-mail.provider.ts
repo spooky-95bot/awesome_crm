@@ -1,5 +1,5 @@
 // src/modules/integrations/mail/providers/smtp-mail.provider.ts
-// Üretim: nodemailer ile gerçek SMTP. Kimlik bilgileri .env'den (SMTP_*).
+// Production : SMTP réel via nodemailer. Identifiants depuis .env (SMTP_*).
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
@@ -39,6 +39,6 @@ export class SmtpMailProvider implements IMailProvider {
       subject: input.subject,
       text,
     });
-    this.logger.log(`SMTP mail gönderildi template=${input.template}`);
+    this.logger.log(`SMTP mail envoyé template=${input.template}`);
   }
 }

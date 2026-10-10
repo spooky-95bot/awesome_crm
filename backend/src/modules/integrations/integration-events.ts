@@ -1,5 +1,5 @@
 // src/modules/integrations/integration-events.ts
-// Desteklenen domain olayları (abonelik + yayınlama bunlarla sınırlı).
+// Événements de domaine pris en charge (abonnement + publication limités à ceux-ci).
 export const SUPPORTED_EVENTS = [
   'deal.created',
   'deal.moved',

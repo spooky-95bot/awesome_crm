@@ -1,5 +1,5 @@
 // src/modules/integrations/integrations.repository.ts
-// VERİ ERİŞİMİ: Prisma çağrıları YALNIZCA burada.
+// ACCÈS AUX DONNÉES : les appels Prisma sont UNIQUEMENT ici.
 import { Injectable } from '@nestjs/common';
 import { DeliveryStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';

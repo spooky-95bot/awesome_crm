@@ -33,7 +33,7 @@ export class IntegrationsController {
 
   @Post('webhooks')
   @Permissions(PERMISSIONS.INTEGRATION.MANAGE)
-  @ApiOperation({ summary: 'Webhook aboneliği oluştur (secret bir kez döner)' })
+  @ApiOperation({ summary: "Créer un abonnement webhook (le secret n'est retourné qu'une fois)" })
   create(
     @Body() dto: CreateWebhookDto,
     @CurrentUser() actor: AuthenticatedUser,
@@ -58,7 +58,7 @@ export class IntegrationsController {
   @Post('webhooks/:id/test')
   @Permissions(PERMISSIONS.INTEGRATION.MANAGE)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Test olayı gönder' })
+  @ApiOperation({ summary: 'Envoyer un événement de test' })
   test(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -68,16 +68,16 @@ export class IntegrationsController {
 
   @Get('webhooks/:id/deliveries')
   @Permissions(PERMISSIONS.INTEGRATION.READ)
-  @ApiOperation({ summary: 'Teslimat geçmişi' })
+  @ApiOperation({ summary: 'Historique des livraisons' })
   deliveries(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.listDeliveries(id);
   }
 
-  // Gelen webhook: dış sistem JWT taşımaz; yetki HMAC imzasıyla. İmzasız → 401.
+  // Webhook entrant : le système externe ne transporte pas de JWT ; l'autorisation se fait par signature HMAC. Sans signature → 401.
   @Public()
   @Post('webhooks/inbound/:source')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Gelen webhook (HMAC imzalı)' })
+  @ApiOperation({ summary: 'Webhook entrant (signé HMAC)' })
   inbound(
     @Param('source') source: string,
     @Req() req: RawBodyRequest<Request>,

@@ -1,5 +1,5 @@
 // src/modules/integrations/mail/providers/simulated-mail.provider.ts
-// Développement/test : n'envoie RIEN réellement ; rend le modèle et journalise. EmailLog est écrit par MailService.
+// Développement/test : n'envoie RIEN réellement ; journalise uniquement les métadonnées. EmailLog est écrit par MailService.
 import { Injectable, Logger } from '@nestjs/common';
 import { IMailProvider, MailInput } from '../mail-provider.interface';
 
