@@ -208,3 +208,45 @@ Solution gratuite recommandée : un compte SMTP gratuit (Brevo 300 mails/jour, o
 Quand un rendez-vous est validé dans le CRM, il faudra appeler
 `MailService.enqueue({ template:'reservation.confirmed', idempotencyKey:'<resaId>:confirmed', tenantId:'elysence' })`.
 Le socle (file, idempotence, reprises, journal) est prêt ; il manque uniquement le transport réel.
+
+---
+
+## Intégration Resend — ✅ TERMINÉE (commit 4e74c71)
+
+### Fichiers modifiés
+- `backend/src/modules/integrations/mail/providers/resend-mail.provider.ts` (nouveau)
+- `backend/src/modules/integrations/mail/providers/resend-mail.provider.spec.ts` (nouveau, 13 tests)
+- `backend/src/modules/integrations/integrations.module.ts` (enregistrement + sélection MAIL_DRIVER)
+- `backend/.env.example` (documentation variables RESEND_*)
+- Traduction turc → français dans 20 fichiers du module integrations (règle zéro turc)
+
+### Architecture
+- `ResendMailProvider` implémente `IMailProvider` (DIP préservée)
+- Utilise `fetch` directement (l'interface `IHttpClient` ne retourne que `{status}`, Resend nécessite le corps)
+- `MAIL_DRIVER=resend` active le provider ; défaut = `simulated` (inchangé)
+- `RESEND_API_KEY` + `RESEND_FROM` requis ; sans eux, aucune erreur silencieuse — exception explicite
+- File d'attente, idempotence, backoff, isolation tenant : tous préservés (MailService inchangé)
+
+### Tests
+- 13 tests Resend : succès, erreurs API (400/429/500), timeout, absence fuite clé API, absence filigrane
+- 152 tests totaux passent (23 suites)
+- `tsc --noEmit` propre
+
+### Absence de filigrane — vérifié
+- **Fait documenté** : Resend n'ajoute aucun watermark ni branding sur le plan Free (sources : Sequenzy, Dreamlit.ai)
+- **Test automatisé** : le texte de l'e-mail ne contient ni "resend", ni "sent with", ni "powered by", ni "unsubscribe"
+- **Condition** : utiliser un domaine vérifié (pas `resend.dev`) pour un rendu professionnel complet
+
+### État production
+- `MAIL_DRIVER` non défini → `simulated` (aucun e-mail réel)
+- Aucune variable `RESEND_*` dans `.env`
+- `EmailLog` vide (0 e-mail envoyé)
+- Aucun e-mail réel envoyé pendant les tests
+
+### Actions manuelles requises pour activer l'envoi réel
+1. Créer un compte Resend (gratuit)
+2. Vérifier un domaine (SPF, DKIM, DMARC) — ou utiliser `resend.dev` pour tester
+3. Générer une API key
+4. Ajouter dans `.env` : `RESEND_API_KEY=re_xxx`, `RESEND_FROM="Maison ELYSENCE <maison@elysence.fr>"`, `MAIL_DRIVER=resend`
+5. Redémarrer le backend
+6. Le déclencheur métier (confirmation réservation) reste à brancher côté CRM
