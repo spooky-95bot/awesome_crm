@@ -1,6 +1,6 @@
 // src/modules/auth/strategies/jwt.strategy.ts
-// Access token doğrulama stratejisi. Yetkiler (roller) HER istekte güncel kaynaktan
-// (DB) okunur — token'a körü körüne güvenilmez (docs/90 §3).
+// Stratégie de validation des access tokens. Les permissions (rôles) sont relues
+// en base à chaque requête — on ne fait pas confiance aveuglément au token.
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -33,11 +33,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Authentification requise');
     }
-    // İzinler her istekte güncel kaynaktan (DB) toplanır; tekilleştirilir.
+    // Les permissions sont relues en base à chaque requête, puis dédupliquées.
     const permissions = new Set<string>();
     for (const ur of user.roles) {
       for (const rp of ur.role.permissions) {
-        permissions.add(rp.permission.action);
+        permissions.add(rp.permission.id);
       }
     }
     return {
