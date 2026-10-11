@@ -1,10 +1,10 @@
 // src/modules/lead-forms/lead-forms.public.controller.ts
-// PUBLIC uçlar (global JwtAuthGuard'dan muaf, bilinçli @Public):
+// Endpoints publics (exemptés du JwtAuthGuard global via @Public):
 //   GET  /public/lead-forms/:publicKey         → embed render config (secret YOK)
-//   POST /public/lead-forms/:publicKey/submit  → tarayıcı formu (imzasız) → FORM kanalı
-//   POST /webhooks/leads/:publicKey            → sunucu-sunucu (HMAC zorunlu) → WEBHOOK kanalı
-// Not: submit ucu tanımsız alanlara izin verir (form-özel alanlar) → DTO yerine ham gövde;
-// validasyon servis katmanında, ham gövde meta'ya yazılır.
+//   POST /public/lead-forms/:publicKey/submit  → formulaire navigateur (non signé) → canal FORM
+//   POST /webhooks/leads/:publicKey            → serveur-à-serveur (HMAC obligatoire) → canal WEBHOOK
+// Note : submit autorise les champs non définis (champs spécifiques au formulaire) → corps brut au lieu du DTO,
+// validation dans la couche service, corps brut écrit dans meta.
 import {
   Body,
   Controller,
@@ -29,7 +29,7 @@ export class LeadFormsPublicController {
 
   @Public()
   @Get('public/lead-forms/:publicKey')
-  @ApiOperation({ summary: 'Embed form yapılandırması (public)' })
+  @ApiOperation({ summary: 'Configuration du formulaire embarqué (public)' })
   config(@Param('publicKey') publicKey: string) {
     return this.service.getPublicConfig(publicKey);
   }
@@ -37,7 +37,7 @@ export class LeadFormsPublicController {
   @Public()
   @Post('public/lead-forms/:publicKey/submit')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Embed form gönderimi (imzasız, public)' })
+  @ApiOperation({ summary: 'Public embed form submission (unsigned)' })
   submit(
     @Param('publicKey') publicKey: string,
     @Body() body: Record<string, unknown>,
@@ -49,7 +49,7 @@ export class LeadFormsPublicController {
   @Post('webhooks/leads/:publicKey')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Webhook ile lead alımı (HMAC imza zorunlu)',
+    summary: 'Réception de lead via webhook (signature HMAC obligatoire)',
   })
   webhook(
     @Param('publicKey') publicKey: string,

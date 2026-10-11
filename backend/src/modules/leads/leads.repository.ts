@@ -1,5 +1,5 @@
 // src/modules/leads/leads.repository.ts
-// VERİ ERİŞİMİ: Prisma çağrıları YALNIZCA burada. convert() tek transaction.
+// ACCÈS DONNÉES : appels Prisma UNIQUEMENT ici. convert() = transaction unique.
 import { Injectable } from '@nestjs/common';
 import { LeadStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,6 +14,10 @@ export class LeadsRepository {
 
   findById(id: string) {
     return this.prisma.lead.findFirst({ where: { id } });
+  }
+
+  findByReservationKey(key: string) {
+    return this.prisma.lead.findFirst({ where: { reservationKey: key } });
   }
 
   async list(where: Prisma.LeadWhereInput, skip: number, take: number) {
@@ -37,9 +41,9 @@ export class LeadsRepository {
     return this.prisma.lead.delete({ where: { id } });
   }
 
-  // Lead → Contact (+Company) + Deal (varsayılan pipeline). Tek transaction.
-  // `overrides` ile Deal/Contact alanları opsiyonel düzenlenebilir (boşsa lead verisi).
-  // Tenant otomatik filtresi tx içinde de uygulanır (oluşturmalarda tenantId atanır).
+  // Lead → Contact (+Company) + Deal (pipeline par défaut). Transaction unique.
+  // `overrides` permet d'ajuster les champs Deal/Contact (sinon données du lead).
+  // Filtre automatique par tenant dans la tx (tenantId assigné à la création).
   async convert(
     leadId: string,
     actorId: string,
@@ -68,7 +72,7 @@ export class LeadsRepository {
       if (!pipeline || !pipeline.stages[0]) {
         return { noPipeline: true as const };
       }
-      // Hedef stage: override geçerliyse o; değilse ilk stage.
+      // Stage cible : override si valide, sinon premier stage.
       const stage =
         pipeline.stages.find((s) => s.id === overrides.stageId) ??
         pipeline.stages[0];

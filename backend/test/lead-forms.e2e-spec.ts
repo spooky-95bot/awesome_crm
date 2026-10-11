@@ -1,6 +1,6 @@
 // backend/test/lead-forms.e2e-spec.ts
-// E2E — Lead intake: embed form (imzasız submit) + webhook (HMAC zorunlu) + kanal filtresi.
-// Negatif testler: geçersiz/eksik imza → 401 (DB yazımı YOK), RBAC (manage yetkisi).
+// E2E — Lead intake : formulaire embarqué (submit non signé) + webhook (HMAC obligatoire) + filtre par canal.
+// Tests négatifs : signature invalide/manquante → 401 (aucune écriture DB), RBAC (permission manage).
 process.env.THROTTLE_LIMIT = '1000';
 
 import {
@@ -95,7 +95,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
     await app?.close();
   });
 
-  it('ADMIN POST /lead-forms → 201, publicKey + secret döner', async () => {
+  it('ADMIN POST /lead-forms → 201, retourne publicKey + secret', async () => {
     const r = await request(app.getHttpServer())
       .post(`${base}/lead-forms`)
       .set(auth(adminToken))
@@ -116,6 +116,20 @@ describe('Lead intake forms + webhook (e2e)', () => {
     expect(secret).toMatch(/^whsec_/);
   });
 
+  it('uses a generic configurable button label when none is supplied', async () => {
+    const r = await request(app.getHttpServer())
+      .post(`${base}/lead-forms`)
+      .set(auth(adminToken))
+      .send({ name: `DefaultLabel_${ts}` })
+      .expect(201);
+    expect(r.body.data.buttonLabel).toBe('Submit');
+    const publicConfig = await request(app.getHttpServer())
+      .get(`${base}/public/lead-forms/${r.body.data.publicKey}`)
+      .expect(200);
+    expect(publicConfig.body.data.buttonLabel).toBe('Submit');
+    await prisma.leadForm.deleteMany({ where: { id: r.body.data.id } });
+  });
+
   it('SALES POST /lead-forms → 403 (lead_form.manage yok)', () =>
     request(app.getHttpServer())
       .post(`${base}/lead-forms`)
@@ -123,7 +137,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
       .send({ name: 'x' })
       .expect(403));
 
-  it('redirectUrl şemasız girilirse https:// eklenir (göreli yönlenme fix)', async () => {
+  it('redirectUrl sans schéma → https:// ajouté (correction relative)', async () => {
     const r = await request(app.getHttpServer())
       .post(`${base}/lead-forms`)
       .set(auth(adminToken))
@@ -149,17 +163,18 @@ describe('Lead intake forms + webhook (e2e)', () => {
       .expect(200);
     expect(r.body.data.name).toBe(`Intake_${ts}`);
     expect(r.body.data.buttonColor).toBe('#ff0000');
+    expect(r.body.data.buttonLabel).toBe('Send'); // client configuration overrides generic fallback
     expect(r.body.data.secret).toBeUndefined();
   });
 
-  it('PUBLIC POST submit (imzasız) → 200, FORM kanalı lead üretir', async () => {
+  it('PUBLIC POST submit (non signé) → 200, crée un lead canal FORM', async () => {
     const r = await request(app.getHttpServer())
       .post(`${base}/public/lead-forms/${publicKey}/submit`)
       .send({
         firstName: `FormLead_${ts}`,
         lastName: 'Web',
         email: 'web@x.test',
-        utm_campaign: 'spring', // form-özel ekstra alan → meta
+        utm_campaign: 'spring', // champ supplémentaire spécifique au formulaire → meta
       })
       .expect(200);
     expect(r.body.data.success).toBe(true);
@@ -174,8 +189,8 @@ describe('Lead intake forms + webhook (e2e)', () => {
     ).toEqual({ utm_campaign: 'spring' });
   });
 
-  it('v4.7 alan ayarları: intl phone + min/max + maxLength + özel mesaj doğrulaması', async () => {
-    // Ayarlı alanlarla form oluştur.
+  it('v4.7 champs configurables : intl phone + min/max + maxLength + validation de message', async () => {
+    // Créer un formulaire avec champs configurables.
     const f = await request(app.getHttpServer())
       .post(`${base}/lead-forms`)
       .set(auth(adminToken))
@@ -188,9 +203,9 @@ describe('Lead intake forms + webhook (e2e)', () => {
             label: 'Telefon',
             type: 'phone',
             required: true,
-            errorMessage: 'Lütfen geçerli telefon girin',
+            errorMessage: 'Veuillez saisir un téléphone valide',
           },
-          { key: 'age', label: 'Yaş', type: 'number', min: 18, max: 99 },
+          { key: 'age', label: 'Âge', type: 'number', min: 18, max: 99 },
           { key: 'code', label: 'Kod', type: 'text', maxLength: 5 },
         ],
       })
@@ -198,7 +213,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
     const vKey = f.body.data.publicKey as string;
     const vId = f.body.data.id as string;
 
-    // Geçerli submit → 200 (E.164 telefon).
+    // Submit valide → 200 (téléphone E.164).
     await request(app.getHttpServer())
       .post(`${base}/public/lead-forms/${vKey}/submit`)
       .send({
@@ -209,28 +224,28 @@ describe('Lead intake forms + webhook (e2e)', () => {
       })
       .expect(200);
 
-    // Zorunlu telefon eksik → 400 + özel mesaj.
+    // Téléphone obligatoire manquant → 400 + message spécifique.
     const miss = await request(app.getHttpServer())
       .post(`${base}/public/lead-forms/${vKey}/submit`)
       .send({ firstName: 'X' })
       .expect(400);
-    expect(miss.body.error.message).toBe('Lütfen geçerli telefon girin');
+    expect(miss.body.error.message).toBe('Veuillez saisir un téléphone valide');
 
-    // Geçersiz telefon (E.164 değil) → 400 + özel mesaj.
+    // Téléphone invalide (pas E.164) → 400 + message spécifique.
     const badPhone = await request(app.getHttpServer())
       .post(`${base}/public/lead-forms/${vKey}/submit`)
       .send({ firstName: 'X', phone: '05321234567' })
       .expect(400);
-    expect(badPhone.body.error.message).toBe('Lütfen geçerli telefon girin');
+    expect(badPhone.body.error.message).toBe('Veuillez saisir un téléphone valide');
 
-    // Sayı min altında → 400.
+    // Nombre sous le minimum → 400.
     const young = await request(app.getHttpServer())
       .post(`${base}/public/lead-forms/${vKey}/submit`)
       .send({ firstName: 'X', phone: '+905321234567', age: '15' })
       .expect(400);
     expect(young.body.error.message).toContain('en az 18');
 
-    // maxLength aşımı → 400.
+    // Dépassement maxLength → 400.
     await request(app.getHttpServer())
       .post(`${base}/public/lead-forms/${vKey}/submit`)
       .send({ firstName: 'X', phone: '+905321234567', code: 'TOOLONG' })
@@ -241,7 +256,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
     await prisma.leadForm.deleteMany({ where: { id: vId } });
   });
 
-  it('WEBHOOK geçerli HMAC → 200, WEBHOOK kanalı lead üretir', async () => {
+  it('WEBHOOK HMAC valide → 200, crée un lead canal WEBHOOK', async () => {
     const body = JSON.stringify({
       firstName: `HookLead_${ts}`,
       lastName: 'Srv',
@@ -264,7 +279,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
     expect(lead?.channel).toBe('WEBHOOK');
   });
 
-  it('WEBHOOK geçersiz imza → 401, lead YARATILMAZ', async () => {
+  it('WEBHOOK signature invalide → 401, aucun lead créé', async () => {
     const before = await prisma.lead.count({
       where: { firstName: `HookLead_${ts}` },
     });
@@ -280,10 +295,10 @@ describe('Lead intake forms + webhook (e2e)', () => {
     const after = await prisma.lead.count({
       where: { firstName: `HookLead_${ts}` },
     });
-    expect(after).toBe(before); // DB yazımı yok
+    expect(after).toBe(before); // aucune écriture DB
   });
 
-  it('WEBHOOK imza başlığı eksik → 401', () => {
+  it('WEBHOOK en-tête signature manquant → 401', () => {
     const body = JSON.stringify({ firstName: `HookLead_${ts}`, lastName: 'Y' });
     return request(app.getHttpServer())
       .post(`${base}/webhooks/leads/${publicKey}`)
@@ -292,7 +307,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
       .expect(401);
   });
 
-  it('GET /leads?channel=FORM → yalnız form leadleri', async () => {
+  it('GET /leads?channel=FORM → uniquement leads formulaires', async () => {
     const r = await request(app.getHttpServer())
       .get(`${base}/leads?channel=FORM`)
       .set(auth(adminToken))
@@ -304,5 +319,195 @@ describe('Lead intake forms + webhook (e2e)', () => {
         (l: { firstName: string }) => l.firstName === `FormLead_${ts}`,
       ),
     ).toBe(true);
+  });
+
+  // ==== Idempotence réservations Elysence ====
+
+  it('IDEMPOTENCE : rejeu même reservationId → un seul lead', async () => {
+    const rid = `RES-${ts}-REPLAY`;
+    const body = JSON.stringify({
+      firstName: `Idem_${ts}`,
+      lastName: 'Replay',
+      email: `idem.replay.${ts}@x.test`,
+      reservationId: rid,
+    });
+    const tsec = Math.floor(Date.now() / 1000);
+    const sig = signPayload(secret, tsec, body);
+
+    // Premier envoi → 200
+    const first = await request(app.getHttpServer())
+      .post(`${base}/webhooks/leads/${publicKey}`)
+      .set('x-crm-timestamp', String(tsec))
+      .set('x-crm-signature', sig)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .expect(200);
+
+    // Rejeu identique → 200, même leadId
+    const second = await request(app.getHttpServer())
+      .post(`${base}/webhooks/leads/${publicKey}`)
+      .set('x-crm-timestamp', String(tsec))
+      .set('x-crm-signature', sig)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .expect(200);
+
+    expect(second.body.data.leadId).toBe(first.body.data.leadId);
+
+    // Un seul lead en base
+    const count = await prisma.lead.count({
+      where: { reservationKey: rid },
+    });
+    expect(count).toBe(1);
+  });
+
+  it('IDEMPOTENCE : requêtes simultanées même reservationId → un seul lead', async () => {
+    const rid = `RES-${ts}-RACE`;
+    const body = JSON.stringify({
+      firstName: `Race_${ts}`,
+      lastName: 'Concurrent',
+      email: `race.${ts}@x.test`,
+      reservationId: rid,
+    });
+    const tsec = Math.floor(Date.now() / 1000);
+    const sig = signPayload(secret, tsec, body);
+
+    // 5 requêtes simultanées
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () =>
+        request(app.getHttpServer())
+          .post(`${base}/webhooks/leads/${publicKey}`)
+          .set('x-crm-timestamp', String(tsec))
+          .set('x-crm-signature', sig)
+          .set('Content-Type', 'application/json')
+          .send(body),
+      ),
+    );
+
+    // Toutes réussissent
+    for (const r of results) {
+      expect(r.status).toBe(200);
+    }
+
+    // Un seul lead en base
+    const count = await prisma.lead.count({
+      where: { reservationKey: rid },
+    });
+    expect(count).toBe(1);
+
+    // Tous les leadId identiques
+    const leadIds = results.map((r) => r.body.data.leadId);
+    expect(new Set(leadIds).size).toBe(1);
+  });
+
+  it('IDEMPOTENCE : reservationId différent → nouveau lead', async () => {
+    const rid1 = `RES-${ts}-DIFF-1`;
+    const rid2 = `RES-${ts}-DIFF-2`;
+
+    for (const rid of [rid1, rid2]) {
+      const body = JSON.stringify({
+        firstName: `Diff_${ts}`,
+        lastName: 'Different',
+        email: `diff.${ts}@x.test`,
+        reservationId: rid,
+      });
+      const tsec = Math.floor(Date.now() / 1000);
+      const sig = signPayload(secret, tsec, body);
+      await request(app.getHttpServer())
+        .post(`${base}/webhooks/leads/${publicKey}`)
+        .set('x-crm-timestamp', String(tsec))
+        .set('x-crm-signature', sig)
+        .set('Content-Type', 'application/json')
+        .send(body)
+        .expect(200);
+    }
+
+    const count = await prisma.lead.count({
+      where: { reservationKey: { in: [rid1, rid2] } },
+    });
+    expect(count).toBe(2);
+  });
+
+  it('IDEMPOTENCE : sans reservationId → pas de clé, pas de blocage', async () => {
+    const body = JSON.stringify({
+      firstName: `NoKey_${ts}`,
+      lastName: 'NoReservation',
+      email: `nokey.${ts}@x.test`,
+    });
+    const tsec = Math.floor(Date.now() / 1000);
+    const sig = signPayload(secret, tsec, body);
+    const r = await request(app.getHttpServer())
+      .post(`${base}/webhooks/leads/${publicKey}`)
+      .set('x-crm-timestamp', String(tsec))
+      .set('x-crm-signature', sig)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .expect(200);
+
+    const lead = await prisma.lead.findFirst({
+      where: { id: r.body.data.leadId },
+    });
+    expect(lead?.reservationKey).toBeNull();
+  });
+
+  it('IDEMPOTENCE : signature invalide → 401, aucun lead créé', async () => {
+    const before = await prisma.lead.count({
+      where: { firstName: `BadSig_${ts}` },
+    });
+    const body = JSON.stringify({
+      firstName: `BadSig_${ts}`,
+      lastName: 'Invalid',
+      email: `badsig.${ts}@x.test`,
+      reservationId: `RES-${ts}-BADSIG`,
+    });
+    const tsec = Math.floor(Date.now() / 1000);
+    await request(app.getHttpServer())
+      .post(`${base}/webhooks/leads/${publicKey}`)
+      .set('x-crm-timestamp', String(tsec))
+      .set('x-crm-signature', 'sha256=invalidsignature')
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .expect(401);
+
+    const after = await prisma.lead.count({
+      where: { firstName: `BadSig_${ts}` },
+    });
+    expect(after).toBe(before);
+  });
+
+  it('IDEMPOTENCE : récupération après erreur réseau (rejeu après 500)', async () => {
+    const rid = `RES-${ts}-RECOVER`;
+    const body = JSON.stringify({
+      firstName: `Recover_${ts}`,
+      lastName: 'AfterError',
+      email: `recover.${ts}@x.test`,
+      reservationId: rid,
+    });
+    const tsec = Math.floor(Date.now() / 1000);
+    const sig = signPayload(secret, tsec, body);
+
+    // Premier envoi
+    await request(app.getHttpServer())
+      .post(`${base}/webhooks/leads/${publicKey}`)
+      .set('x-crm-timestamp', String(tsec))
+      .set('x-crm-signature', sig)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .expect(200);
+
+    // Rejeu après erreur simulée → toujours un seul lead
+    const replay = await request(app.getHttpServer())
+      .post(`${base}/webhooks/leads/${publicKey}`)
+      .set('x-crm-timestamp', String(tsec))
+      .set('x-crm-signature', sig)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .expect(200);
+
+    const count = await prisma.lead.count({
+      where: { reservationKey: rid },
+    });
+    expect(count).toBe(1);
+    expect(replay.body.data.leadId).toBeDefined();
   });
 });

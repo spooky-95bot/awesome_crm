@@ -31,6 +31,7 @@ export interface IntakeLeadInput {
   meta?: Prisma.InputJsonValue;
   tenantId?: string | null;
   ownerId?: string | null;
+  reservationKey?: string | null; // clé d'idempotence (réservation)
 }
 
 @Injectable()
@@ -67,9 +68,46 @@ export class LeadsService {
       meta: input.meta,
       tenantId: input.tenantId ?? undefined,
       ownerId: input.ownerId ?? undefined,
+      reservationKey: input.reservationKey ?? undefined,
     };
     if (input.formId) data.form = { connect: { id: input.formId } };
-    const lead = await this.repo.create(data);
+
+    // Déduplication atomique : si la clé de réservation existe déjà,
+    // on retourne le lead existant sans créer de doublon.
+    if (input.reservationKey) {
+      const existing = await this.repo.findByReservationKey(input.reservationKey);
+      if (existing) {
+        this.logger.log(
+          `lead.intake.dedup reservationKey=${input.reservationKey} lead=${existing.id}`,
+        );
+        return existing;
+      }
+    }
+
+    let lead;
+    try {
+      lead = await this.repo.create(data);
+    } catch (err) {
+      // Deux requêtes simultanées avec la même clé : la contrainte UNIQUE
+      // garantit qu'une seule passe. On récupère le lead déjà créé.
+      if (
+        err &&
+        typeof err === 'object' &&
+        'code' in err &&
+        (err as { code?: string }).code === 'P2002' &&
+        input.reservationKey
+      ) {
+        const existing = await this.repo.findByReservationKey(input.reservationKey);
+        if (existing) {
+          this.logger.log(
+            `lead.intake.dedup.race reservationKey=${input.reservationKey} lead=${existing.id}`,
+          );
+          return existing;
+        }
+      }
+      throw err;
+    }
+
     this.logger.log(
       `lead.intake channel=${input.channel} form=${input.formId ?? '-'} lead=${lead.id}`,
     );

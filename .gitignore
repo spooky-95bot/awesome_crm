@@ -49,3 +49,4 @@ docs/
 
 # Secret local du poller de réservations (jamais versionné)
 .reservation-secret
+.preview-reservation-secret

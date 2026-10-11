@@ -526,6 +526,7 @@ model Lead {
   tenantId           String?
   convertedContactId String?
   convertedDealId    String?
+  reservationKey     String? // clé d'idempotence (réservation) ; unique si renseignée
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
@@ -535,6 +536,7 @@ model Lead {
   @@index([status])
   @@index([channel])
   @@index([formId])
+  @@unique([reservationKey])
 }
 
 // ===== Lead Intake — Embed edilebilir form + gelen webhook =====

@@ -73,7 +73,7 @@ export class LeadFormsService {
       fields: (dto.fields ??
         this.defaultFields()) as unknown as Prisma.InputJsonValue,
       buttonColor: dto.buttonColor ?? '#4f46e5',
-      buttonLabel: dto.buttonLabel ?? 'Gönder',
+      buttonLabel: dto.buttonLabel ?? 'Submit',
       successMessage: dto.successMessage,
       redirectUrl: this.normalizeUrl(dto.redirectUrl),
     });
@@ -198,7 +198,12 @@ export class LeadFormsService {
     } catch {
       throw new ForbiddenException("Le corps n'est pas du JSON");
     }
-    const lead = await this.ingest(payload, LeadChannel.WEBHOOK, form);
+    // Clé d'idempotence : si le payload contient reservationId, elle est
+    // utilisée comme reservationKey pour empêcher les doublons.
+    const reservationKey = typeof payload.reservationId === 'string' && payload.reservationId.trim()
+      ? payload.reservationId.trim()
+      : null;
+    const lead = await this.ingest(payload, LeadChannel.WEBHOOK, form, reservationKey);
     return { success: true, leadId: lead.id };
   }
 
@@ -261,6 +266,7 @@ export class LeadFormsService {
     payload: IntakePayloadDto,
     channel: LeadChannel,
     form: { id: string; name: string; tenantId: string | null },
+    reservationKey?: string | null,
   ) {
     const { firstName, lastName } = this.splitName(payload);
     // Champs extra (inconnus) → meta ; le corps brut est aussi conservé.
@@ -282,6 +288,7 @@ export class LeadFormsService {
       formId: form.id,
       tenantId: form.tenantId,
       meta: { formName: form.name, fields: extra } as Prisma.InputJsonValue,
+      reservationKey,
     });
     await this.repo.incrementSubmit(form.id);
     return lead;
