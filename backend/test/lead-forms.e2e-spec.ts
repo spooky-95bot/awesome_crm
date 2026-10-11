@@ -243,7 +243,7 @@ describe('Lead intake forms + webhook (e2e)', () => {
       .post(`${base}/public/lead-forms/${vKey}/submit`)
       .send({ firstName: 'X', phone: '+905321234567', age: '15' })
       .expect(400);
-    expect(young.body.error.message).toContain('en az 18');
+    expect(young.body.error.message).toContain('Âge doit être ≥ 18.');
 
     // Dépassement maxLength → 400.
     await request(app.getHttpServer())
