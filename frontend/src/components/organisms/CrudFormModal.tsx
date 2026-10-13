@@ -1,7 +1,7 @@
 'use client';
 // src/components/organisms/CrudFormModal.tsx
-// Yeniden kullanılabilir CRUD formu (oluştur/düzenle/sil). Alan tanımıyla beslenir.
-// Yalnız dolu alanlar gönderilir (boş = değişiklik yok / opsiyonel atlanır).
+// Formulaire CRUD réutilisable (créer/modifier/supprimer). Alimenté par la définition des champs.
+// Seuls les champs remplis sont envoyés (vide = pas de modification / optionnel ignoré).
 import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { Modal } from '../molecules/Modal';
@@ -79,7 +79,7 @@ export function CrudFormModal({
 
   const del = async () => {
     if (!onDelete) return;
-    if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
+    if (!confirm('Voulez-vous vraiment supprimer cet enregistrement ?')) return;
     setBusy(true);
     setErr(null);
     try {

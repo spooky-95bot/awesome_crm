@@ -1,5 +1,5 @@
 'use client';
-// app/(dashboard)/contacts/[id]/page.tsx — Fiche cliente: identité, synthèse, historique des achats.
+// app/(dashboard)/contacts/[id]/page.tsx — Fiche client: identité, synthèse, historique des achats.
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { api, unwrap } from '@/lib/api';
@@ -66,18 +66,18 @@ export default function ContactDetailPage() {
   const lastVisit = list[0]?.createdAt;
 
   return (
-    <DashboardTemplate title="Fiche cliente">
+    <DashboardTemplate title="Fiche client">
       <button
         onClick={() => router.push('/contacts')}
         className="mb-4 text-sm font-medium text-elysence-gold hover:underline"
       >
-        ← Retour aux clientes
+        ← Retour aux clients
       </button>
 
       {contact.isLoading ? (
         <Spinner />
       ) : !c ? (
-        <p className="text-gray-500">Cliente introuvable.</p>
+        <p className="text-gray-500">Client introuvable.</p>
       ) : (
         <>
           {/* Identité */}

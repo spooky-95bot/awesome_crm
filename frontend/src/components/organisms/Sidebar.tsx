@@ -87,7 +87,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         <Section id="activite" title="Activité">
           <NavLink href="/" label="Tableau de bord" />
           {can('lead.read') && <NavLink href="/leads" label="Nouvelles demandes" />}
-          {can('contact.read') && <NavLink href="/contacts" label="Clientes" />}
+          {can('contact.read') && <NavLink href="/contacts" label="Clients" />}
           {can('meeting.read') && <NavLink href="/meetings" label="Rendez-vous" />}
         </Section>
 
@@ -103,6 +103,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           {can('lead_form.read') && <NavLink href="/lead-forms" label="Formulaires" />}
           {can('user.read') && <NavLink href="/users" label="Utilisateurs" />}
           {can('branding.manage') && <NavLink href="/branding" label="Paramètres" />}
+          <NavLink href="/cms" label="CMS du site" />
         </Section>
       </nav>
     </aside>

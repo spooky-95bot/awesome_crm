@@ -1,5 +1,5 @@
 'use client';
-// app/(dashboard)/invoices/page.tsx — fatura: liste + oluştur (kalemli) + issue/ödeme/iptal.
+// app/(dashboard)/invoices/page.tsx — factures : liste + création (détaillée) + émission/paiement/annulation.
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@/lib/api';
@@ -97,8 +97,8 @@ export default function InvoicesPage() {
     onSuccess: invalidate,
   });
 
-  // v4.6 — iyzico Checkout Form: başlat → hosted ödeme sayfasına yönlen.
-  // iyzico ödeme sonrası backend callback'i tarayıcıyı /invoices?payment=... adresine döndürür.
+  // v4.6 — iyzico Checkout Form: lancer → rediriger vers la page de paiement hébergée.
+  // iyzico après paiement redirige le navigateur vers /invoices?payment=...
   const payIyzico = useMutation({
     mutationFn: async (id: string) =>
       unwrap<{ paymentPageUrl: string | null }>(
@@ -110,8 +110,8 @@ export default function InvoicesPage() {
     onError: () => alert(t('pay.notConnected')),
   });
 
-  // Ödeme dönüşü (?payment=success|failed) → banner + liste tazele. window üzerinden
-  // okunur (useSearchParams statik prerender'ı bozardı); yalnız istemcide çalışır.
+  // Retour de paiement (?payment=success|failed) → banner + rafraîchir la liste. à partir de la fenêtre
+  // lu côté client (useSearchParams casserait le rendu statique); fonctionne uniquement côté client.
   const [payResult, setPayResult] = useState<string | null>(null);
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('payment');
@@ -122,7 +122,7 @@ export default function InvoicesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pré-remplissage depuis une cliente (?contactId=) : nom + dernière vente.
+  // Pré-remplissage depuis un client (?contactId=) : nom + dernière vente.
   useEffect(() => {
     const cid = new URLSearchParams(window.location.search).get('contactId');
     if (!cid) return;
@@ -153,7 +153,7 @@ export default function InvoicesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // v3.2 — bağlı muhasebe sağlayıcısına gönder (QuickBooks/Xero).
+  // v3.2 — envoyer au comptable connecté (QuickBooks/Xero).
   const accSync = useMutation({
     mutationFn: async (id: string) =>
       unwrap<{ status: string; externalId?: string | null; error?: string }>(

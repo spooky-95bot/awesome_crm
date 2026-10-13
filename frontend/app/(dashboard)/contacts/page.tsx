@@ -1,5 +1,5 @@
 'use client';
-// app/(dashboard)/contacts/page.tsx — Clientes: liste en cartes + accès fiche historique.
+// app/(dashboard)/contacts/page.tsx — Clients: liste en cartes + accès fiche historique.
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -49,14 +49,14 @@ export default function ContactsPage() {
   const list = contacts.data ?? [];
 
   return (
-    <DashboardTemplate title="Clientes">
+    <DashboardTemplate title="Clients">
       <p className="mb-4 text-sm text-gray-600">
-        Retrouvez vos clientes et tout ce qu&apos;elles ont acheté.
+        Retrouvez vos clients et tout ce qu&apos;ils ont acheté.
       </p>
 
       {can('contact.create') && (
         <div className="mb-4">
-          <Button onClick={() => setCreating(true)}>+ Nouvelle cliente</Button>
+          <Button onClick={() => setCreating(true)}>+ Nouveau client</Button>
         </div>
       )}
 
@@ -64,9 +64,9 @@ export default function ContactsPage() {
         <Spinner />
       ) : list.length === 0 ? (
         <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-          <p className="text-gray-500">Aucune cliente enregistrée</p>
+          <p className="text-gray-500">Aucun client enregistré</p>
           <p className="mt-1 text-sm text-gray-400">
-            Ajoutez une cliente ou convertissez une demande.
+            Ajoutez un client ou convertissez une demande.
           </p>
         </div>
       ) : (
@@ -117,7 +117,7 @@ export default function ContactsPage() {
 
       {creating && (
         <CrudFormModal
-          title="Nouvelle cliente"
+          title="Nouveau client"
           fields={fields}
           submitLabel="Créer"
           onClose={() => setCreating(false)}
@@ -130,7 +130,7 @@ export default function ContactsPage() {
 
       {editing && (
         <CrudFormModal
-          title="Modifier la cliente"
+          title="Modifier le client"
           fields={fields}
           initial={{
             firstName: editing.firstName,

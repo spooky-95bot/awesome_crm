@@ -190,7 +190,7 @@ export default function SalesPage() {
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 sm:rounded-2xl">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Nouvelle vente</h2>
 
-            <label className="mb-1 block text-sm font-medium text-gray-700">Cliente</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Client</label>
             <select
               value={contactId}
               onChange={(e) => setContactId(e.target.value)}
